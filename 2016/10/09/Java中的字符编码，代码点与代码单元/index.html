@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="对于我来说，处理字符串编码总是一件非常头疼的事情，不管是在Java中还是在Python等其他编程语言中，花费在字符编码上的时间往往非常多。为了解决这个老大难问题，我在本篇文章中对Java中的字符编码问题做一个总结记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java中的字符编码，代码点与代码单元">
+<meta property="og:url" content="http://bigmingtalk.github.io/2016/10/09/Java中的字符编码，代码点与代码单元/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="对于我来说，处理字符串编码总是一件非常头疼的事情，不管是在Java中还是在Python等其他编程语言中，花费在字符编码上的时间往往非常多。为了解决这个老大难问题，我在本篇文章中对Java中的字符编码问题做一个总结记录。">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%811.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%812.png">
+<meta property="og:updated_time" content="2016-12-07T11:04:09.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java中的字符编码，代码点与代码单元">
+<meta name="twitter:description" content="对于我来说，处理字符串编码总是一件非常头疼的事情，不管是在Java中还是在Python等其他编程语言中，花费在字符编码上的时间往往非常多。为了解决这个老大难问题，我在本篇文章中对Java中的字符编码问题做一个总结记录。">
+<meta name="twitter:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%811.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>Java中的字符编码，代码点与代码单元 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-Java中的字符编码，代码点与代码单元" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/10/09/Java中的字符编码，代码点与代码单元/" class="article-date">
+      <time datetime="2016-10-09T13:14:04.000Z" itemprop="datePublished">2016-10-09</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Java中的字符编码，代码点与代码单元
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/Java/">Java</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/char类型/">char类型</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代码点/">代码点</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/编码/">编码</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>对于我来说，处理字符串编码总是一件非常头疼的事情，不管是在Java中还是在Python等其他编程语言中，花费在字符编码上的时间往往非常多。为了解决这个老大难问题，我在本篇文章中对Java中的字符编码问题做一个总结记录。<br><a id="more"></a></p>
+<h1 id="字符编码标准"><a href="#字符编码标准" class="headerlink" title="字符编码标准"></a>字符编码标准</h1><p>计算机能处理的只有数字。对于其他任意的信息，比如文本，图片，音频视频等，都必须先将其转化为数字，才能在计算机中进行存储和传输。将文本信息转换为数字表示的这个过程也就是编码过程。编码的标准多种多样，由于计算机是由美国人发明的，因此，最早只有127个字母符号被编码，包括常用的大小写字母，数字以及一些符号，这也就是最初的ASCII编码。如字符‘A’的编码是65。ASCII编码只需要一个字节即8bit就能够表示（实际7bit就行）。<br>随着计算机在全世界迅速普及，各个国家也都针对自即的语言设计了编码标准，如我国汉字的GB2312编码。日文的Shift_JIS编码等等。如此多的标准带来的一个后果就是混乱不堪🙈，比如用GB2312编码了一段文字，但在解码时却用Shift_JIS解码，那信息肯定会不对。这也是打开有些网页时会出现乱码的原因。为了解决各个国家间编码标准不统一的问题，Unicode编码出现了！Unicode编码标准通常用两个字节表示一个字符，对于非常生僻的字符可能需要4个字节。在1991年发布的Unicode 1.0中，用2个字节共16位能够表示65536个字符，但是在增加了大量的汉语，日语，汉语等表意文字后，Unicode字符迅速超过了65536，为了解决这个问题，Unicode编码采用了代码级别（Code plane）的概念，后文将会对其作详细介绍。Unicode编码标准的出现解决了乱码问题，但在也出现了一些附带问题。比如在一篇纯英文文章，用ASCII编码时每个字符只需要一个字节，但用Unicode编码就需要两个字节，这极大地降低了编码的效率，在文本的存储和传输上造成极大的浪费。<br>为了提高存储和传输的效率，出现了将Unicode编码转换的编码形式，具体如UTF-8编码，UTF-16编码，UTF-32编码等。UTF是Unicode TransferFormat的缩写，即把Unicode编码转做某种格式的意思。UTF-8是我们很常见的一种格式，也是现在应用最广泛的一种编码格式。UTF-8编码把一个Unicode字符根据不同的数字大小编码成1-6个字节，常用的英文字母被编码成1个字节，汉字通常是3个字节，只有很生僻的字符才会被编码成4-6个字节。如果你要传输的文本包含大量英文字符，用UTF-8编码就能节省空间。字符’A’和汉字’中’在各种标准中的编码格式如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>字符</th>
+<th style="text-align:center">ASCII</th>
+<th style="text-align:right">Unicode</th>
+<th>UTF-8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align:center">01000001</td>
+<td style="text-align:right">00000000 01000001</td>
+<td>01000001</td>
+</tr>
+<tr>
+<td>中</td>
+<td style="text-align:center">无法表示</td>
+<td style="text-align:right">01001110 00101101</td>
+<td>11100100 10111000 10101101</td>
+</tr>
+</tbody>
+</table>
+<p>从上例中可以得知，ASCII编码其实是UTF-8中的一部分。UTF-8，UTF-16已经UTF-32等不同类型的编码格式都有其不同的使用场景，UTF-16比起UTF-8，好处在于大部分字符都以固定长度的字节 (2字节) 储存，但UTF-16却无法兼容于ASCII编码。<br>关于Unicode与其具体的UTF-XX的区别为在计算机内存中，统一使用Unicode编码，当需要保存到硬盘或者需要传输的时候，就转换为UTF-8编码等具体的编码形式。记事本编辑的时候，从文件读取的UTF-8字符被转换为Unicode字符到内存里，编辑完成后，保存的时候再把Unicode转换为UTF-8保存到文件：<br><img src="http://oe0nilvpj.bkt.clouddn.com/%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%811.png" alt="记事本保存UTF-8编码"><br>浏览网页的时候，服务器会把动态生成的Unicode内容转换为UTF-8再传输到浏览器：<br><img src="http://oe0nilvpj.bkt.clouddn.com/%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%812.png" alt="UTF-8格式保存的网页"><br>所以你看到很多网页的源码上会有类似<code>&lt;meta charset=&quot;UTF-8&quot; /&gt;</code>的信息，表示该网页正是用的UTF-8编码。</p>
+<h1 id="代码点与代码单元，以及Java中的char类型"><a href="#代码点与代码单元，以及Java中的char类型" class="headerlink" title="代码点与代码单元，以及Java中的char类型"></a>代码点与代码单元，以及Java中的char类型</h1><h2 id="代码点"><a href="#代码点" class="headerlink" title="代码点"></a>代码点</h2><p>代码点（code point）是指与一个编码表中的某个字符对应的代码值。在Unicode标准中，代码点采用十六进制书写，并加上前缀U+，例如U+41就字符‘A’的代码点，Unicode的代码点可以分为17个代码级别（code plane）。第一个代码级别称为基本的多语言级别（basic multilingual plane），代码点从U+0000到U+FFFF,其中包括了经典的Unicode代码（2字节共16位），其余的16个附加级别，代码点从U+10000到U+10FFFF，其中包括了一些辅助字符。</p>
+<h2 id="UTF-16"><a href="#UTF-16" class="headerlink" title="UTF-16"></a>UTF-16</h2><p>UTF-16则采用不同长度的编码表示所有的Unicode代码点。在基本的多语言级别中，每个字符用16位表示，通常被称为代码单元（Code unit）；而辅助字符采用一段连续的代码单元进行编码。这样构成的编码值一定落入基本的多语言级别中空闲的2048位内，通常被称为替代区域（surrogate area）[U+D800~U+DBFF用于第一个代码单元，U+DC00~U+DFFF用于第二个代码单元，两者之和即U+D800~U+DFFF一共是由2048位]。这样的设计非常巧妙，我们可以从中迅速知道一个代码单元是一个字符的编码，还是一个辅助字符的第一或第二部分。例如，整数集合的数学符号Z(这里不是字母Z,我实在是在markdown里打不出那符号了，囧)的代码点是U+1D56B，并且是用两个代码单元U+D835和U+DD6B编码的，具体的编码算法可以查看<a href="https://en.wikipedia.org/wiki/UTF-16" target="_blank" rel="external">UTF-16维基百科</a>。</p>
+<h2 id="Java-char"><a href="#Java-char" class="headerlink" title="Java char"></a>Java char</h2><p>在Java中，char类型用UTF-16编码描述一个代码单元。我们都知道Java中char是2个字节的，也就是说，Java中单个char只支持基本平面内的字符，而扩展平面内的字符需要一对char来表示。所以对于一个String类型的变量str来说，可以用<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">```Java</div><div class="line">int pos = str.offsetByCodePoints(0, i); </div><div class="line">int cp = str.codePointAt(pos);</div></pre></td></tr></table></figure></p>
+<p>来获得。</p>
+<p>参考资料：<br><a href="http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431664106267f12e9bef7ee14cf6a8776a479bdec9b9000" target="_blank" rel="external">廖雪峰关于字符编码的解释</a><br>《Java核心技术 卷I》</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2016-10-09, 21:14:04</p>
+        <p><span>最后更新:</span>2016-12-07, 19:04:09</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2016/10/09/Java中的字符编码，代码点与代码单元/" title="Java中的字符编码，代码点与代码单元">http://bigmingtalk.github.io/2016/10/09/Java中的字符编码，代码点与代码单元/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/10/09/Java中的字符编码，代码点与代码单元/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">
+                    Java传值还是传引用？读完这篇文章你就懂了！
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2016/10/04/Java中private方法能重写吗？/">
+                    Java中private方法能重写吗？
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#字符编码标准"><span class="toc-number">1.</span> <span class="toc-text">字符编码标准</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#代码点与代码单元，以及Java中的char类型"><span class="toc-number">2.</span> <span class="toc-text">代码点与代码单元，以及Java中的char类型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#代码点"><span class="toc-number">2.1.</span> <span class="toc-text">代码点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UTF-16"><span class="toc-number">2.2.</span> <span class="toc-text">UTF-16</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-char"><span class="toc-number">2.3.</span> <span class="toc-text">Java char</span></a></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"Java中的字符编码，代码点与代码单元　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/" title="上一篇: Java传值还是传引用？读完这篇文章你就懂了！">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2016/10/04/Java中private方法能重写吗？/" title="下一篇: Java中private方法能重写吗？">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

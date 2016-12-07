@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="今天看Java源代码的时候发现很多的native关键字来修饰一个方法，这些方法没有具体的实现，以前只知道native方法是非Java代码实现的方法，但是对于其具体的调用以及意义并不是非常清楚，所以在这里整理一下，方便大家的阅读，同时也供自己日后参考之用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="谈谈Java的native关键字以及JNI调用和实现">
+<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="今天看Java源代码的时候发现很多的native关键字来修饰一个方法，这些方法没有具体的实现，以前只知道native方法是非Java代码实现的方法，但是对于其具体的调用以及意义并不是非常清楚，所以在这里整理一下，方便大家的阅读，同时也供自己日后参考之用。">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/JNI.png">
+<meta property="og:updated_time" content="2016-12-07T10:23:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="谈谈Java的native关键字以及JNI调用和实现">
+<meta name="twitter:description" content="今天看Java源代码的时候发现很多的native关键字来修饰一个方法，这些方法没有具体的实现，以前只知道native方法是非Java代码实现的方法，但是对于其具体的调用以及意义并不是非常清楚，所以在这里整理一下，方便大家的阅读，同时也供自己日后参考之用。">
+<meta name="twitter:image" content="http://oe0nilvpj.bkt.clouddn.com/JNI.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>谈谈Java的native关键字以及JNI调用和实现 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-谈谈Java的native关键字以及JNI调用和实现" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/" class="article-date">
+      <time datetime="2016-12-05T11:59:54.000Z" itemprop="datePublished">2016-12-05</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      谈谈Java的native关键字以及JNI调用和实现
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/Java/">Java</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/native-method/">native method</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>今天看Java源代码的时候发现很多的native关键字来修饰一个方法，这些方法没有具体的实现，以前只知道native方法是非Java代码实现的方法，但是对于其具体的调用以及意义并不是非常清楚，所以在这里整理一下，方便大家的阅读，同时也供自己日后参考之用。<br><a id="more"></a></p>
+<h2 id="Native-Method"><a href="#Native-Method" class="headerlink" title="Native Method"></a>Native Method</h2><p>Java中的native关键字是方法修饰符, 而由native修饰的方法是由另外一种语言实现的本地方法。</p>
+<h3 id="一-什么是Native-Method"><a href="#一-什么是Native-Method" class="headerlink" title="一. 什么是Native Method"></a>一. 什么是Native Method</h3><p>简单地讲，一个native Method就是一个Java调用非Java代码的接口。一个native Method是这样一个Java的方法：该方法的实现由非Java语言实现，比如C。这个特征并非Java所特有，很多其它的编程语言都有这一机制，比如在C++中，你可以用extern “C”告知C++编译器去调用一个C的函数。”A native method is a Java method whose implementation is provided by non-java code.”</p>
+<p>在定义一个native method时，并不提供实现体（有些像定义一个Java interface），因为其实现体是由非Java语言在外面实现的。比如在Object.java中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> java.lang;     </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Object</span> </span>&#123; </div><div class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">registerNatives</span><span class="params">()</span></span>; </div><div class="line">	</div><div class="line">	<span class="keyword">static</span> &#123;     </div><div class="line">		registerNatives();     </div><div class="line">	&#125;        </div><div class="line">	<span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> Class&lt;?&gt; getClass();     </div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span></span>;     </div><div class="line">	</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;     </div><div class="line">	<span class="keyword">return</span> (<span class="keyword">this</span> == obj);     </div><div class="line">	&#125;     </div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> Object <span class="title">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException</span>;     </div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;     </div><div class="line">	<span class="keyword">return</span> getClass().getName() + <span class="string">"@"</span> + Integer.toHexString(hashCode());     </div><div class="line">	&#125;     </div><div class="line">	  </div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">()</span></span>;     </div><div class="line">	 </div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">notifyAll</span><span class="params">()</span></span>;     </div><div class="line">	</div><div class="line">	  </div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">wait</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;     </div><div class="line">	wait(<span class="number">0</span>);     </div><div class="line">	&#125;     </div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">wait</span><span class="params">(<span class="keyword">long</span> timeout)</span> <span class="keyword">throws</span> InterruptedException</span>;     </div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">wait</span><span class="params">(<span class="keyword">long</span> timeout, <span class="keyword">int</span> nanos)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;     </div><div class="line">		<span class="keyword">if</span> (timeout &lt; <span class="number">0</span>) &#123;     </div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"timeout value is negative"</span>);     </div><div class="line">		&#125;     </div><div class="line">	</div><div class="line">		<span class="keyword">if</span> (nanos &lt; <span class="number">0</span> || nanos &gt; <span class="number">999999</span>) &#123;     </div><div class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(     </div><div class="line">				<span class="string">"nanosecond timeout value out of range"</span>);     </div><div class="line">		&#125;     </div><div class="line">	</div><div class="line">	<span class="keyword">if</span> (nanos &gt;= <span class="number">500000</span> || (nanos != <span class="number">0</span> &amp;&amp; timeout == <span class="number">0</span>)) &#123;     </div><div class="line">		timeout++;     </div><div class="line">	&#125;     </div><div class="line">	</div><div class="line">	wait(timeout);     </div><div class="line">	&#125;     </div><div class="line">	  </div><div class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable </span>&#123; &#125;     </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>诸如getClass()，hashCode()，clone()，notify()，notifyAll()，wait(long timeout)等我们熟悉的方法都是native method。这些native method的声明描述了这些非Java代码在Java代码中应该看起来的样子。</p>
+<p>标识符native可以与所有其它的Java标识符连用，但是abstract除外。这是合理的，因为native暗示这些方法是有实现体的，只不过这些实现体是非Java的，但是abstract却显然的指明这些方法无实现体。native与其它Java标识符连用时，其意义同非native method并无差别，比如native static表明这个方法可以在不产生类的实例时直接调用，这非常方便，比如当你想用一个native method去调用一个C的类库时。</p>
+<p>一个native method方法可以返回任何Java类型，包括非基本类型，而且同样可以进行异常控制。这些方法的实现体可以制一个异常并且将其抛出，这一点与Java的方法非常相似。当一个native method接收到一些非基本类型时如Object或一个整型数组时，这个方法可以访问这非些基本型的内部，但是这将使这个native方法依赖于你所访问的Java类的实现。有一点要牢牢记住：我们可以在一个native method的本地实现中访问所有的Java特性，但是这要依赖于你所访问的Java特性的实现，而且这样做远远不如在Java语言中使用那些特性方便和容易。</p>
+<p>一个native method的存在并不会对其他类调用这些本地方法产生任何影响，实际上调用这些方法的其他类甚至不知道它所调用的是一个本地方法。JVM将控制调用本地方法的所有细节。需要注意当我们将一个本地方法声明为final的情况。</p>
+<p>用Java实现的方法体在被编译时可能会因为内联而产生效率上的提升。但是一个native final方法是否也能获得这样的好处却是值得怀疑的，但是这只是一个代码优化方面的问题，对功能实现没有影响。</p>
+<p>如果一个含有本地方法的类被继承，子类会继承这个本地方法并且可以用Java语言重写这个方法（这个似乎看起来有些奇怪），同样的如果一个本地方法被fianl标识，它被继承后不能被重写。</p>
+<p>本地方法非常有用，因为它有效地扩充了JVM。事实上，我们所写的Java代码已经用到了本地方法，在sun的Java的并发（多线程）的机制实现中，许多与操作系统的接触点都用到了本地方法，这使得Java程序能够超越Java运行时的界限。有了本地方法，Java程序可以做任何应用层次的任务。</p>
+<h3 id="二-为什么要使用Native-Method"><a href="#二-为什么要使用Native-Method" class="headerlink" title="二. 为什么要使用Native Method"></a>二. 为什么要使用Native Method</h3><p>Java使用起来非常方便，然而有些层次的任务用Java实现起来不容易，或者我们对程序的效率很在意时，问题就来了。</p>
+<h4 id="与Java环境外交互："><a href="#与Java环境外交互：" class="headerlink" title="与Java环境外交互："></a>与Java环境外交互：</h4><p>有时Java应用需要与Java外面的环境交互。这是本地方法存在的主要原因，你可以想想Java需要与一些底层系统如操作系统或某些硬件交换信息时的情况。本地方法正是这样一种交流机制：它为我们提供了一个非常简洁的接口，而且我们无需去了解Java应用之外的繁琐的细节。</p>
+<h4 id="与操作系统交互："><a href="#与操作系统交互：" class="headerlink" title="与操作系统交互："></a>与操作系统交互：</h4><p>JVM支持着Java语言本身和运行时库，它是Java程序赖以生存的平台，它由一个解释器（解释字节码）和一些连接到本地代码的库组成。然而不管怎样，它毕竟不是一个完整的系统，它经常依赖于一些底层（underneath在下面的）系统的支持。这些底层系统常常是强大的操作系统。通过使用本地方法，我们得以用Java实现了jre的与底层系统的交互，甚至JVM的一些部分就是用C写的，还有，如果我们要使用一些Java语言本身没有提供封装的操作系统的特性时，我们也需要使用本地方法。</p>
+<h4 id="Sun’s-Java"><a href="#Sun’s-Java" class="headerlink" title="Sun’s Java"></a>Sun’s Java</h4><p>Sun的解释器是用C实现的，这使得它能像一些普通的C一样与外部交互。jre大部分是用Java实现的，它也通过一些本地方法与外界交互。例如：类java.lang.Thread 的 setPriority()方法是用Java实现的，但是它实现调用的是该类里的本地方法setPriority0()。这个本地方法是用C实现的，并被植入JVM内部，在Windows 95的平台上，这个本地方法最终将调用Win32 SetPriority() API。这是一个本地方法的具体实现由JVM直接提供，更多的情况是本地方法由外部的动态链接库（external dynamic link library）提供，然后被JVM调用。</p>
+<h3 id="三-JVM怎样使Native-Method跑起来"><a href="#三-JVM怎样使Native-Method跑起来" class="headerlink" title="三.JVM怎样使Native Method跑起来"></a>三.JVM怎样使Native Method跑起来</h3><p>我们知道，当一个类第一次被使用到时，这个类的字节码会被加载到内存，并且只会回载一次。在这个被加载的字节码的入口维持着一个该类所有方法描述符的list，这些方法描述符包含这样一些信息：方法代码存于何处，它有哪些参数，方法的描述符（public之类）等等。</p>
+<p>如果一个方法描述符内有native，这个描述符块将有一个指向该方法的实现的指针。这些实现在一些DLL文件内，但是它们会被操作系统加载到Java程序的地址空间。当一个带有本地方法的类被加载时，其相关的DLL并未被加载，因此指向方法实现的指针并不会被设置。当本地方法被调用之前，这些DLL才会被加载，这是通过调用java.system.loadLibrary()实现的。使用本地方法是有开销的，它丧失了Java的很多好处。如果别无选择，我们可以选择使用本地方法。</p>
+<h2 id="JNI调用和实现"><a href="#JNI调用和实现" class="headerlink" title="JNI调用和实现"></a>JNI调用和实现</h2><h3 id="一-JNI简介"><a href="#一-JNI简介" class="headerlink" title="一. JNI简介"></a>一. JNI简介</h3><p>JNI全称是Java Native Interface（Java本地接口）单词首字母的缩写，本地接口就是指用C和C++开发的接口。由于JNI是 JVM规范 中的一部份，因此可以将我们写的JNI程序在任何实现了JNI规范的Java虚拟机中运行。同时，这个特性使我们可以复用以前用C/C++写的大量代码。</p>
+<p>开发JNI程序会受到系统环境的限制，因为用C/C++语言写出来的代码或模块，编译过程当中要依赖当前操作系统环境所提供的一些库函数，并和本地库链接在一起。而且编译后生成的二进制代码只能在本地操作系统环境下运行，因为不同的操作系统环境，有自己的本地库和CPU指令集，而且各个平台对标准C/C++的规范和标准库函数实现方式也有所区别。这就造成使用了JNI接口的JAVA程序，不再像以前那样自由的跨平台。如果要实现跨平台，就必须将本地代码在不同的操作系统平台下编译出相应的动态库。</p>
+<h3 id="二-JNI实现"><a href="#二-JNI实现" class="headerlink" title="二. JNI实现"></a>二. JNI实现</h3><p>JNI开发流程主要分为以下6步：</p>
+<ol>
+<li>编写Java源代码</li>
+<li>将Java源代码编译成class字节码文件</li>
+<li>用javah -jni命令生成.h头文件（javah是jdk自带的一个命令，-jni参数表示将class中用native声明的函数生成jni规则的函数）</li>
+<li>用本地代码实现.h头文件中的函数</li>
+<li>将本地代码编译成动态库 （windows： <em>.dll ，linux/unix： </em>.so ，mac os x： *.jnilib ）</li>
+<li>拷贝动态库至java.library.path 本地库搜索目录下，并运行Java程序</li>
+</ol>
+<p>通过上面的介绍，相信大家对JNI及开发流程有了一个整体的认识，下面通过一个HelloNative的示例，再深入了解JNI开发的各个环节及注意事项。<br>编译环境：<br>本人的开发环境为Mac os x 10.11.1， 如果在其它操作系统下开发也是一样，只需将本地代码编译成当前操作系统所支持的动态库即可。</p>
+<p>g++ -v显示的g++版本如下所示（Mac下默认安装）：<br>Configured with: –prefix=/Applications/Xcode.app/Contents/Developer/usr –with-gxx-include-dir=/usr/include/c++/4.2.1<br>Apple LLVM version 7.0.0 (clang-700.0.72)<br>Target: x86_64-apple-darwin15.5.0<br>Thread model: posix</p>
+<p>java -version显示的版本为<br>java version “1.8.0_60”<br>Java(TM) SE Runtime Environment (build 1.8.0_60-b27)<br>Java HotSpot(TM) 64-Bit Server VM (build 25.60-b23, mixed mode)</p>
+<p>1 创建HelloNative.java，并编写代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 16/12/5.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloNative</span></span>&#123;</div><div class="line">    <span class="keyword">static</span> &#123;</div><div class="line">        System.loadLibrary(<span class="string">"Hello"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">printHello</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">new</span> HelloNative().printHello();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在static语句块中，会在Java类的初始化阶段用于初始化静态变量；<br>System.loadLibray(“Hello”)用于加载native c++代码编译生成的动态库，从后面的结果我们可以看到，在mac下, 动态库的名字应该是libHello.jnilib;之所以将System.loadLibrary(“Hello”) 放到static block中，就是为了在类初始化时首先执行这部分代码，确保在类执行本地方法时已经加载了对应的库文件；<br>同时使用native关键字声明了一个方法void printHello()，表明这个方法将用native的方式实现； </p>
+<p>2 编译<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ javac HelloNative.java</div></pre></td></tr></table></figure></p>
+<p>3 生成native文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$javah -jni HelloNative</div></pre></td></tr></table></figure></p>
+<p>当前目录下可以看到已经生成了HelloNative.h,  这是不可修改的代码，用于指定了native代码中需要实现的函数的原型； 执行cat HelloNative.h后可以看到文件内容是：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 16/12/5.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloNative</span></span>&#123;</div><div class="line">    <span class="keyword">static</span> &#123;</div><div class="line">        System.loadLibrary(<span class="string">"Hello"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">printHello</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">new</span> HelloNative().printHello();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>4 新建HelloNative.cpp文件，并在其中添加native c++代码<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span>  </span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"HelloNative.h"</span>  </span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span>  </span></div><div class="line">  </div><div class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL <span class="title">Java_HelloNative_printHello</span>  </span></div><div class="line">  <span class="params">(JNIEnv *, jobject)</span>  </div><div class="line">&#123;  </div><div class="line">   <span class="built_in">printf</span>(<span class="string">"Hello, Native!"</span>);  </div><div class="line">   <span class="keyword">return</span> ;  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先，需要包含头文件 jni.h，该文件定义了JNI的函数类型和数据结构；<br>接着需要包含上一步生成的native头文件HelloNative.h;<br>最后，按照HelloNative.h中声明的函数原型实现函数体；</p>
+<p>5 编译c++代码，生成动态库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ g++ -dynamiclib -I /System/Library/Frameworks/JavaVM.framework/Headers HelloNative.cpp -o libHello.jnilib</div></pre></td></tr></table></figure></p>
+<p>-dynamiclib选项表示生成动态库，相当于linux环境下的-shared;<br>-I 指定编译的依赖的头文件所在的路径，在这里也就是jni.h和jni_md.h所在的路径。linux环境下，路径可能是/usr/lib/jvm/java-xxx/include;<br>其实这里的jni.h文件也可以在$JAVA_HOME/include目录下找到，jni_md.h则是对应于不同的操作系统所在位置不同，在Mac下为在$JAVA_HOME/include/darwin目录下；<br>-o指定生成的动态库文件的名称，在Mac中，动态库的命名格式为libXXX.jnilib，相当于linux下的libXXX.so; </p>
+<p>6 运行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ java HelloNative</div></pre></td></tr></table></figure></p>
+<p>则可以得到输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Hello, Native!</div></pre></td></tr></table></figure></p>
+<p>JNI调用C流程图如下图所示：<br><img src="http://oe0nilvpj.bkt.clouddn.com/JNI.png" alt="JNI!"></p>
+<p>参考：<br><a href="http://blog.csdn.net/codigger/article/details/9296037" target="_blank" rel="external">http://blog.csdn.net/codigger/article/details/9296037</a><br><a href="http://www.tuicool.com/articles/ZV3iee" target="_blank" rel="external">http://www.tuicool.com/articles/ZV3iee</a><br><a href="https://my.oschina.net/u/1413984/blog/199027" target="_blank" rel="external">https://my.oschina.net/u/1413984/blog/199027</a><br><a href="http://blog.csdn.net/sjw890821sjw/article/details/8058843" target="_blank" rel="external">http://blog.csdn.net/sjw890821sjw/article/details/8058843</a><br><a href="http://www.cnblogs.com/Alandre/p/4456719.html" target="_blank" rel="external">http://www.cnblogs.com/Alandre/p/4456719.html</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2016-12-05, 19:59:54</p>
+        <p><span>最后更新:</span>2016-12-07, 18:23:55</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/" title="谈谈Java的native关键字以及JNI调用和实现">http://bigmingtalk.github.io/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2016/12/05/Java中Object类源代码详解(转)/">
+                    Java中Object类源代码详解(转)
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2016/12/01/说说Java中的静态内部类/">
+                    说说Java中的静态内部类
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Native-Method"><span class="toc-number">1.</span> <span class="toc-text">Native Method</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#一-什么是Native-Method"><span class="toc-number">1.1.</span> <span class="toc-text">一. 什么是Native Method</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二-为什么要使用Native-Method"><span class="toc-number">1.2.</span> <span class="toc-text">二. 为什么要使用Native Method</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#与Java环境外交互："><span class="toc-number">1.2.1.</span> <span class="toc-text">与Java环境外交互：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#与操作系统交互："><span class="toc-number">1.2.2.</span> <span class="toc-text">与操作系统交互：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sun’s-Java"><span class="toc-number">1.2.3.</span> <span class="toc-text">Sun’s Java</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三-JVM怎样使Native-Method跑起来"><span class="toc-number">1.3.</span> <span class="toc-text">三.JVM怎样使Native Method跑起来</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI调用和实现"><span class="toc-number">2.</span> <span class="toc-text">JNI调用和实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#一-JNI简介"><span class="toc-number">2.1.</span> <span class="toc-text">一. JNI简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二-JNI实现"><span class="toc-number">2.2.</span> <span class="toc-text">二. JNI实现</span></a></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"谈谈Java的native关键字以及JNI调用和实现　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/2016/12/05/Java中Object类源代码详解(转)/" title="上一篇: Java中Object类源代码详解(转)">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2016/12/01/说说Java中的静态内部类/" title="下一篇: 说说Java中的静态内部类">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
