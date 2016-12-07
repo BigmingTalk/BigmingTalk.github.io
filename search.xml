@@ -221,12 +221,6 @@
   
     
     <entry>
-      <title><![CDATA[tags]]></title>
-      <url>http://bigmingtalk.github.io/tags/index.html</url>
-      <content type="html"></content>
-    </entry>
-    
-    <entry>
       <title><![CDATA[404 Not Found：该页无法显示]]></title>
       <url>http://bigmingtalk.github.io//404.html</url>
       <content type="html"></content>
@@ -235,6 +229,12 @@
     <entry>
       <title><![CDATA[about]]></title>
       <url>http://bigmingtalk.github.io/about/index.html</url>
+      <content type="html"></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[tags]]></title>
+      <url>http://bigmingtalk.github.io/tags/index.html</url>
       <content type="html"></content>
     </entry>
     
