@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="卡特兰(Catalan)数在各种笔试智力题中经常出现，其是组合数学中一个常在各种计数问题中出现的数列，其以比利时的数学家卡特兰的名字命名。卡特兰数再许多场景中都有应用，常见的有括号匹配问题，进栈出栈问题，二叉树的种类问题，n个非叶节点的满二叉树的形态数，网格路径问题，凸多边形分割问题，集合划分问题，阶梯切分问题，乘积重组问题，圆内弦不相交问题，高矮排队问题，格子填数问题，门票找钱问题以及卡特兰数的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="说说卡特兰数">
+<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/26/说说卡特兰数/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="卡特兰(Catalan)数在各种笔试智力题中经常出现，其是组合数学中一个常在各种计数问题中出现的数列，其以比利时的数学家卡特兰的名字命名。卡特兰数再许多场景中都有应用，常见的有括号匹配问题，进栈出栈问题，二叉树的种类问题，n个非叶节点的满二叉树的形态数，网格路径问题，凸多边形分割问题，集合划分问题，阶梯切分问题，乘积重组问题，圆内弦不相交问题，高矮排队问题，格子填数问题，门票找钱问题以及卡特兰数的">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%8D%A1%E7%89%B9%E5%85%B0%E6%95%B0.jpeg">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E8%BF%9B%E5%87%BA%E6%A0%88.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E6%BB%A1%E4%BA%8C%E5%8F%89%E6%A0%91.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E7%BD%91%E6%A0%BC.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%87%B8%E5%A4%9A%E8%BE%B9%E5%BD%A2.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/n%E5%B1%82%E9%98%B6%E6%A2%AF%E5%88%92%E5%88%86.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/n%E5%B1%82%E9%98%B6%E6%A2%AF%E5%88%92%E5%88%862.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%9C%86%E5%86%85%E5%BC%A6%E9%97%AE%E9%A2%98.png">
+<meta property="og:updated_time" content="2016-12-26T14:26:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="说说卡特兰数">
+<meta name="twitter:description" content="卡特兰(Catalan)数在各种笔试智力题中经常出现，其是组合数学中一个常在各种计数问题中出现的数列，其以比利时的数学家卡特兰的名字命名。卡特兰数再许多场景中都有应用，常见的有括号匹配问题，进栈出栈问题，二叉树的种类问题，n个非叶节点的满二叉树的形态数，网格路径问题，凸多边形分割问题，集合划分问题，阶梯切分问题，乘积重组问题，圆内弦不相交问题，高矮排队问题，格子填数问题，门票找钱问题以及卡特兰数的">
+<meta name="twitter:image" content="http://oe0nilvpj.bkt.clouddn.com/%E5%8D%A1%E7%89%B9%E5%85%B0%E6%95%B0.jpeg">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>说说卡特兰数 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-说说卡特兰数" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/12/26/说说卡特兰数/" class="article-date">
+      <time datetime="2016-12-26T12:40:18.000Z" itemprop="datePublished">2016-12-26</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      说说卡特兰数
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/面试/">面试</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>卡特兰(Catalan)数在各种笔试智力题中经常出现，其是组合数学中一个常在各种计数问题中出现的数列，其以比利时的数学家卡特兰的名字命名。卡特兰数再许多场景中都有应用，常见的有括号匹配问题，进栈出栈问题，二叉树的种类问题，n个非叶节点的满二叉树的形态数，网格路径问题，凸多边形分割问题，集合划分问题，阶梯切分问题，乘积重组问题，圆内弦不相交问题，高矮排队问题，格子填数问题，门票找钱问题以及卡特兰数的变形问题。</p>
+<a id="more"></a>
+<p>卡特兰数有一些非常美的性质，比如：<br><img src="http://oe0nilvpj.bkt.clouddn.com/%E5%8D%A1%E7%89%B9%E5%85%B0%E6%95%B0.jpeg" alt="卡特兰数"></p>
+<p>前几个卡特兰数为：1，1，2，5，14，42，132，429，1430，4862，16796，58786，208012，…</p>
+<p>卡特兰数可用上述的公式方便求解，代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">getCatalan</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</div><div class="line">       <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) &#123;</div><div class="line">           <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="keyword">long</span>[] arr = <span class="keyword">new</span> <span class="keyword">long</span>[n + <span class="number">1</span>];</div><div class="line">       arr[<span class="number">0</span>] = arr[<span class="number">1</span>] = <span class="number">1</span>;</div><div class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n; i++) &#123;</div><div class="line">           <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</div><div class="line">               arr[i] += (arr[j] * arr[i - <span class="number">1</span> - j]); <span class="comment">// 根据递归式计算</span></div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">long</span> res = arr[n];</div><div class="line">       <span class="keyword">return</span> res;</div><div class="line">   &#125;</div></pre></td></tr></table></figure></p>
+<h1 id="卡特兰数的应用场景"><a href="#卡特兰数的应用场景" class="headerlink" title="卡特兰数的应用场景"></a>卡特兰数的应用场景</h1><h2 id="括号匹配问题"><a href="#括号匹配问题" class="headerlink" title="括号匹配问题"></a>括号匹配问题</h2><p>问题：n对括号有多少种匹配方式？</p>
+<p>n对括号相当于有2n个符号，n个左括号、n个右括号，可以设问题的解为f(2n)。第0个符号肯定为左括号，与之匹配的右括号必须为第2i+1字符。因为如果是第2i个字符，那么第0个字符与第2i个字符间包含奇数个字符，而奇数个字符是无法构成匹配的。通过简单分析，f(2n)可以转化如下的递推式 f(2n) = f(0)f(2n-2) + f(2)f(2n - 4) + … + f(2n - 4)f(2) + f(2n-2)f(0)。</p>
+<p>f(0)f(2n-2)表示第0个字符与第1个字符匹配，同时剩余字符分成两个部分，一部分为0个字符，另一部分为2n-2个字符，然后对这两部分求解。f(2)f(2n-4)表示第0个字符与第3个字符匹配，同时剩余字符分成两个部分，一部分为2个字符，另一部分为2n-4个字符。依次类推。结合递归式，不难发现f(2n)等于卡特兰公式的第n项。</p>
+<h2 id="进栈出栈问题"><a href="#进栈出栈问题" class="headerlink" title="进栈出栈问题"></a>进栈出栈问题</h2><p><img src="http://oe0nilvpj.bkt.clouddn.com/%E8%BF%9B%E5%87%BA%E6%A0%88.png" alt="进栈出栈"><br>问题：一个栈(无穷大)的进栈序列为1，2，3，…，n，有多少个不同的出栈序列?</p>
+<p>该问题与加括号的很相似，进栈操作相当于是左括号，而出栈操作相当于右括号。n个数的进栈次序和出栈次序构成了一个含2n个数字的序列。第0个数字肯定是进栈的数，这个数相应的出栈的数一定是第2i+1个数。因为如果是2i，那么中间包含了奇数个数，这奇数个肯定无法构成进栈出栈序列。设问题的解为f(2n)， 那么f(2n) = f(0)f(2n-2) + f(2)f(2n-4) + f(2n-2)f(0)。</p>
+<p>f(0)f(2n-2)表示第0个数字进栈后立即出栈，此时这个数字的进栈与出栈间包含的数字个数为0，剩余为2n-2个数。f(2)f(2n-4)表示第0个数字进栈与出栈间包含了2个数字，相当于1 2 2 1，剩余为2n-4个数字。依次类推。假设f(0) = 1，计算一下开始几项，f(2) = 1, f(4) = 2, f(6) = 5。结合递归式，不难发现f(2n)等于卡特兰公式的第n项。</p>
+<h2 id="二叉树的种类问题"><a href="#二叉树的种类问题" class="headerlink" title="二叉树的种类问题"></a>二叉树的种类问题</h2><p>问题：n个节点构成的二叉树，共有多少种情形？</p>
+<p>可以这样考虑，根肯定会占用一个结点，那么剩余的n-1个结点可以有如下的分配方式，T(0, n-1),T(1, n-2),…T(n-1, 0)，设T(i, j)表示根的左子树含i个结点，右子树含j个结点。<br>设问题的解为f(n)，那么f(n) = f(0)f(n-1) + f(1)f(n-2) + …….+ f(n-2)f(1) + f(n-1)f(0)。假设f(0) = 1，那么f(1) = 1, f(2) = 2, f(3) = 5。结合递归式，不难发现f(n)等于卡特兰公式的第n项。</p>
+<h1 id="n个非叶节点的满二叉树的形态数"><a href="#n个非叶节点的满二叉树的形态数" class="headerlink" title="n个非叶节点的满二叉树的形态数"></a>n个非叶节点的满二叉树的形态数</h1><p><img src="http://oe0nilvpj.bkt.clouddn.com/%E6%BB%A1%E4%BA%8C%E5%8F%89%E6%A0%91.png" alt="满二叉树的形态数"><br>问题：n个非叶节点的满二叉树的形态数（对称后得到的二叉树除非自己本身对称，否则算是不同）</p>
+<p>对于满二叉树，实际上就是将上题中的每个子节点的空儿子上都加上叶子，就形成了对应的满二叉树，那么n个非叶节点形成的满二叉树的形态数即为卡特兰公式的第n项。</p>
+<h2 id="网格路径问题"><a href="#网格路径问题" class="headerlink" title="网格路径问题"></a>网格路径问题</h2><p><img src="http://oe0nilvpj.bkt.clouddn.com/%E7%BD%91%E6%A0%BC.png" alt="网格路径"><br>问题：对于一个nxn的正方形网格，每次我们能向右或者向上移动一格，那么从左下角到右上角的所有在副对角线右下方的路径总数为多少？</p>
+<p>我们将一条水平边记为进栈,垂直边记为出栈，我们所要保证的就是前k步中水平边的个数不小于垂直边的个数，换句话说出栈的时候栈内一直有元素，所以从根本上说又回归到卡特兰。</p>
+<h2 id="凸多边形分割问题"><a href="#凸多边形分割问题" class="headerlink" title="凸多边形分割问题"></a>凸多边形分割问题</h2><p><img src="http://oe0nilvpj.bkt.clouddn.com/%E5%87%B8%E5%A4%9A%E8%BE%B9%E5%BD%A2.png" alt="凸多边形"><br>问题：求一个凸多边形区域划分成三角形区域的方法数？</p>
+<p>以凸多边形的一边为基，设这条边的2个顶点为A和B。从剩余顶点中选1个，可以将凸多边形分成三个部分，中间是一个三角形，左右两边分别是两个凸多边形，然后求解左右两个凸多边形。设问题的解f(n)，其中n表示顶点数，那么f(n) = f(2)f(n-1) + f(3)f(n-2) + ……f(n-2)f(3) + f(n-1)f(2)。</p>
+<p>f(2)f(n-1)表示三个相邻的顶点构成一个三角形，那么另外两个部分的顶点数分别为2和n-1。设f(2) = 1，那么f(3) = 1, f(4) = 2, f(5) = 5。结合递推式，不难发现f(n) 等于等于卡特兰公式的第n-2项。</p>
+<h2 id="集合划分问题"><a href="#集合划分问题" class="headerlink" title="集合划分问题"></a>集合划分问题</h2><p>问题：对于集合{1,2,3…2n}的不交叉划分的数目为多少？</p>
+<p>这里解释一下不交叉划分，我们对于集合{a,b}和{c,d}，假设他们组成了两个区间[a,b]和[c,d]，我们假设两个区间不重合，那么以下四种情况当做是不交叉的：a&lt;c&lt;d&lt;b，a&lt;b&lt;c&lt;d，c&lt;a&lt;b&lt;d与c&lt;d&lt;a&lt;b，就是说两个区间可以包含或者相离，那么此时我们称集合{a,b}和{c,d}是不交叉的。</p>
+<p>对于集合{1,2,3…2n}，将里面元素两两分为一子集，共n个，若任意两个子集都是不交叉的，那么我们称此时的这个划分为一个不交叉划分。我们将每个子集中较小的数用左括号代替，较大的用右括号代替，那么带入原来的1至2n的序列中就形成了合法括号问题，就是我们之前得到过的结论。</p>
+<h2 id="阶梯切分问题"><a href="#阶梯切分问题" class="headerlink" title="阶梯切分问题"></a>阶梯切分问题</h2><p><img src="http://oe0nilvpj.bkt.clouddn.com/n%E5%B1%82%E9%98%B6%E6%A2%AF%E5%88%92%E5%88%86.png" alt="阶梯切分问题"><br><img src="http://oe0nilvpj.bkt.clouddn.com/n%E5%B1%82%E9%98%B6%E6%A2%AF%E5%88%92%E5%88%862.png" alt="阶梯切分问题"><br>问题：求n层的阶梯切割为n个矩形的切法数</p>
+<p>这个证明是怎么进行的呢？我们先绘制如下的一张图片，即n为5的时候的阶梯：<br>我们注意到每个切割出来的矩形都必需包括一块标示为<em> 的小正方形,那么我们此时枚举每个</em> 与#标示的两角作为矩形，剩下的两个小阶梯就是我们的两个更小的子问题了，于是我们的C5 = C0 <em> C4 + C1 </em> C3 + C2 <em> C2 + C1 </em> C3 + C0 <em> C4，注意到这里的式子就是我们前面的性质3,因此这就是我们所求的结果了。将原图中枚举的每个以</em>和#为两角的矩形挖去，将会剩下两个更小的阶梯（或者一个大小为0的阶梯和一个大小非0的阶梯）。</p>
+<h2 id="乘积重组问题"><a href="#乘积重组问题" class="headerlink" title="乘积重组问题"></a>乘积重组问题</h2><p>问题：矩阵连乘：P=a1×a2×a3×……×an，依据乘法结合律，不改变其顺序，只用括号表示成对的乘积，试问有几种括号化的方案？</p>
+<p>我们这样考虑，首先通过括号化，将P分成两个部分，然后分别对两个部分进行括号化。比如分成(a1)×(a2×a3…..×an)，然后再对(a1)和(a2×a3…..×an)分别括号化；又如分成(a1×a2)×(a3…..×an)，然后再对(a1×a2)和(a3…..×an)括号化。</p>
+<p> 设n个矩阵的括号化方案的种数为f(n)，那么问题的解为f(n) = f(1)f(n-1) + f(2)f(n-2) + f(3)f(n-3) + f(n-1)f(1)。f(1)*f(n-1)表示分成(a1)×(a2×a3…..×an)两部分，然后分别括号化。计算开始几项，f(1) = 1, f(2) = 1, f(3) = 2, f(4) = 5。结合递归式，不难发现f(n)等于卡特兰公式的第n-1项。</p>
+<h2 id="圆内弦不相交问题"><a href="#圆内弦不相交问题" class="headerlink" title="圆内弦不相交问题"></a>圆内弦不相交问题</h2><p><img src="http://oe0nilvpj.bkt.clouddn.com/%E5%9C%86%E5%86%85%E5%BC%A6%E9%97%AE%E9%A2%98.png" alt="圆内弦不相交"><br>问题：在圆上有2n个点，将这些点成对连接起来使得所得到的n条弦不相交的方法数？</p>
+<p>我们这样考虑，以其中一个点为基点，编号为0，然后按顺时针方向将其他点依次编号。那么与编号为0相连点的编号一定是奇数，否则，这两个编号间含有奇数个点，势必会有个点被孤立，即在一条弦的两侧分别有一个孤立点，从而导致两条弦相交。设选中的基点为A，与它连接的点为B，那么A和B将所有点分成两个部分，一部分位于A、B的左边，另一部分位于A、B的右边。然后分别对这两部分求解即可。</p>
+<p>设问题的解f(n)，那么f(n) = f(0)f(n-2) + f(2)f(n-4) + f(4)f(n-6) + ……f(n-4)f(2) + f(n-2)f(0)。f(0)f(n-2)表示编号0的点与编号1的点相连，此时位于它们右边的点的个数为0，而位于它们左边的点为2n-2。依次类推。f(0) = 1, f(2) = 1, f(4) = 2。结合递归式，不难发现f(2n)等于卡特兰公式的第n项。</p>
+<h2 id="高矮排队问题"><a href="#高矮排队问题" class="headerlink" title="高矮排队问题"></a>高矮排队问题</h2><p>问题：2n个高矮不同的人,排成两排,每排必须是从矮到高排列,而且第二排比对应的第一排的人高,问排列方式有多少种?</p>
+<p>先将2n个人从低到高排列，然后，用0表示对应的人在第一排,用1表示对应的人在第二排,那么含有n个0,n个1的序列,就对应一种方案.<br>比如00…011…1就对应着<br>第一排:1     2     3    …n<br>第二排:n+1  n+2  n+3  …2n<br>而010101…01对应着<br>第一排:1   3   5  …2n-1<br>第二排:2   4   6  …2n </p>
+<p>问题转换为,这样的满足条件的01序列有多少个？观察1的出现,我们考虑它能不能放在第二排,显然,在这个1之前出现的那些0和1对应的人 要么是在这个1左边,要么是在这个1前面。而即使前面0和1刚好配对，也一定要留出一个0在这个1前面，也就是要求之前的0的个数大于1的个数. 如果把0看成入栈操作,1看成出栈操作,就是说给定2n个元素,合法的入栈出栈序列有多少个。结合递归式，不难发现f(2n)等于卡特兰公式的第n项。</p>
+<h2 id="格子填数问题"><a href="#格子填数问题" class="headerlink" title="格子填数问题"></a>格子填数问题</h2><p>问题：在一个2*n的格子中填入1到2n这些数值使得每个格子内的数值都比其右边和上边的所有数值都小的情况数</p>
+<p>该题和上一题排队是一样的思路。</p>
+<h2 id="门票找钱问题"><a href="#门票找钱问题" class="headerlink" title="门票找钱问题"></a>门票找钱问题</h2><p>问题：有2n个人排成一行进入剧场。入场费5元。其中只有n个人有一张5元钞票，另外n人只有10元钞票，剧院无其它钞票，问有多少中方法使得只要有10元的人买票，售票处就有5元的钞票找零？</p>
+<p>可以将持5元买票视为进栈，那么持10元买票视为5元的出栈。这个问题就转化成了栈的出栈次序数。</p>
+<h2 id="Catalan数的一个变形应用"><a href="#Catalan数的一个变形应用" class="headerlink" title="Catalan数的一个变形应用"></a>Catalan数的一个变形应用</h2><p>上面第12小题的一个延伸：n+m个人排队买票，并且满足n&gt;=m，票价为5元，其中n个人各手持一张5元钞票，m个人各手持一张10元钞票，除此之外大家身上没有任何其他的钱币，并且初始时候售票窗口没有钱，问有多少种排队的情况数能够让大家都买到票。</p>
+<p>这个题目是Catalan数的变形，不考虑人与人的差异，如果m=n的话那么就是我们初始的Catalan数问题，也就是将手持5元的人看成是入栈，手持10元的人看成是出栈，出栈序列的个数。这个题目区别就在于n &gt; m的情况，此时我们仍然可以用原先的证明方法考虑，假设我们要的情况数是D(n + m)，无法让每个人都买到的情况数是U(n+m)，那么就有D(n + m) + U(n + m) = C(m + n, n)，此时我们求U(n + m)，我们假设最早买不到票的人编号是k，他手持的是10元并且售票处没有钱，那么将前k个人的钱从5元变成10元，从10元变成5元，这时候就有n+1个人手持5元，m-1个手持10元的，所以就得到U(n + m) = C(n + m, n + 1)，即存在一一对应关系。于是我们的结果就因此得到了，表达式是D(n + m) = C(n + m, n) - C(n + m, n + 1)。</p>
+<h1 id="参考："><a href="#参考：" class="headerlink" title="参考："></a>参考：</h1><p><a href="http://blog.csdn.net/duanruibupt/article/details/6869431" target="_blank" rel="external">http://blog.csdn.net/duanruibupt/article/details/6869431</a><br><a href="http://www.cnblogs.com/wuyuegb2312/p/3016878.html" target="_blank" rel="external">http://www.cnblogs.com/wuyuegb2312/p/3016878.html</a><br><a href="http://blog.csdn.net/han_xiaoyang/article/details/11938973" target="_blank" rel="external">http://blog.csdn.net/han_xiaoyang/article/details/11938973</a><br><a href="https://en.wikipedia.org/wiki/Catalan_number" target="_blank" rel="external">https://en.wikipedia.org/wiki/Catalan_number</a><br><a href="https://zh.wikipedia.org/wiki/%E5%8D%A1%E5%A1%94%E5%85%B0%E6%95%B0" target="_blank" rel="external">https://zh.wikipedia.org/wiki/%E5%8D%A1%E5%A1%94%E5%85%B0%E6%95%B0</a><br><a href="http://lanqi.org/skills/10939/" target="_blank" rel="external">http://lanqi.org/skills/10939/</a><br><a href="http://lanqi.org/skills/10631/" target="_blank" rel="external">http://lanqi.org/skills/10631/</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2016-12-26, 20:40:18</p>
+        <p><span>最后更新:</span>2016-12-26, 22:26:30</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2016/12/26/说说卡特兰数/" title="说说卡特兰数">http://bigmingtalk.github.io/2016/12/26/说说卡特兰数/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/26/说说卡特兰数/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">
+                    深入理解红黑树及TreeMap源码实现
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#卡特兰数的应用场景"><span class="toc-number">1.</span> <span class="toc-text">卡特兰数的应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#括号匹配问题"><span class="toc-number">1.1.</span> <span class="toc-text">括号匹配问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#进栈出栈问题"><span class="toc-number">1.2.</span> <span class="toc-text">进栈出栈问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二叉树的种类问题"><span class="toc-number">1.3.</span> <span class="toc-text">二叉树的种类问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#n个非叶节点的满二叉树的形态数"><span class="toc-number">2.</span> <span class="toc-text">n个非叶节点的满二叉树的形态数</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#网格路径问题"><span class="toc-number">2.1.</span> <span class="toc-text">网格路径问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#凸多边形分割问题"><span class="toc-number">2.2.</span> <span class="toc-text">凸多边形分割问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#集合划分问题"><span class="toc-number">2.3.</span> <span class="toc-text">集合划分问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#阶梯切分问题"><span class="toc-number">2.4.</span> <span class="toc-text">阶梯切分问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#乘积重组问题"><span class="toc-number">2.5.</span> <span class="toc-text">乘积重组问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#圆内弦不相交问题"><span class="toc-number">2.6.</span> <span class="toc-text">圆内弦不相交问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高矮排队问题"><span class="toc-number">2.7.</span> <span class="toc-text">高矮排队问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#格子填数问题"><span class="toc-number">2.8.</span> <span class="toc-text">格子填数问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#门票找钱问题"><span class="toc-number">2.9.</span> <span class="toc-text">门票找钱问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Catalan数的一个变形应用"><span class="toc-number">2.10.</span> <span class="toc-text">Catalan数的一个变形应用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考："><span class="toc-number">3.</span> <span class="toc-text">参考：</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"说说卡特兰数　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2016/12/26/说说卡特兰数/" data-title="说说卡特兰数" data-url="http://bigmingtalk.github.io/2016/12/26/说说卡特兰数/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2016/12/26/深入理解红黑树及TreeMap源码实现/" title="下一篇: 深入理解红黑树及TreeMap源码实现">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列（例子，技巧与使用场景）/">深入浅出数据结构之栈与队列（例子，技巧与使用场景）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
