@@ -196,7 +196,7 @@
                 
                 <section class="switch-part switch-part2">
                     <div class="widget tagcloud" id="js-tagcloud">
-                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li></ul>
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li></ul>
                     </div>
                 </section>
                 
@@ -262,6 +262,78 @@
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
       <div class="body-wrap">
+  
+    <article id="post-深入理解红黑树及TreeMap源码实现" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/12/26/深入理解红黑树及TreeMap源码实现/" class="article-date">
+      <time datetime="2016-12-26T05:00:00.000Z" itemprop="datePublished">2016-12-26</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+              <p>本文中，将对红黑树做系统性的介绍，并配合Java集合框架中TreeMap源码的红黑树实现来做具体说明。</p>
+<h1 id="红黑树介绍"><a href="#红黑树介绍" class="headerlink" title="红黑树介绍"></a>红黑树介绍</h1><p>算法导论中对红黑树（R-B Tree）的介绍为：</p>
+<blockquote>
+<p>红黑树，一种二叉查找树，但在每个节点上增加一个存储位表示节点的颜色，可以是RED或BLACK。通过对任何一条从根到叶子的路径上各个节点着色方式的限制，红黑树确保没有一条路径会比其他路径长出两倍，因而是接近平衡的。</p>
+</blockquote>
+          
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/数据结构/">数据结构</a>
+    </div>
+
+
+      
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/源码/">源码</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/红黑树/">红黑树</a></li></ul>
+    </div>
+
+      
+        <p class="article-more-link">
+          <a href="/2016/12/26/深入理解红黑树及TreeMap源码实现/#more">阅读全文 >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
   
     <article id="post-十八般排序算法，样样精通" class="article article-type-post" itemscope itemprop="blogPost">
   
@@ -882,75 +954,10 @@
 
 
   
-    <article id="post-有的没的，写下来的才是你的" class="article article-type-post" itemscope itemprop="blogPost">
   
-    <div class="article-meta">
-      <a href="/2016/09/21/有的没的，写下来的才是你的/" class="article-date">
-      <time datetime="2016-09-21T12:24:23.000Z" itemprop="datePublished">2016-09-21</time>
-</a>
-
-
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-          
-              <p><img src="http://oe0nilvpj.bkt.clouddn.com/write.jpg" alt="Write!"></p>
-<p>人总是低估自己的短期记忆能力，高估自己的长期记忆能力。<br>
-          
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-    <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/Life/">Life</a>
-    </div>
-
-
-      
-    <div class="article-tag tagcloud">
-        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/写作/">写作</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/记忆/">记忆</a></li></ul>
-    </div>
-
-      
-        <p class="article-more-link">
-          <a href="/2016/09/21/有的没的，写下来的才是你的/#more">阅读全文 >></a>
-        </p>
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-
-
-  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    </nav>
   
 </div>
       <footer id="footer">

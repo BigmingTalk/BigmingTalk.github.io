@@ -14,20 +14,16 @@
 <meta name="author" content="Bigming" />
 
 
+    
+    
 
-<meta name="description" content="结论：Java中private方法不能被重写！
-为什么呢？请思考30秒，看看你的Java基本功怎么样…">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Java中private方法能重写吗？">
-<meta property="og:url" content="http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/index.html">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Bigming">
+<meta property="og:url" content="http://bigmingtalk.github.io/page/2/index.html">
 <meta property="og:site_name" content="Bigming">
-<meta property="og:description" content="结论：Java中private方法不能被重写！
-为什么呢？请思考30秒，看看你的Java基本功怎么样…">
-<meta property="og:updated_time" content="2016-12-07T10:23:56.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java中private方法能重写吗？">
-<meta name="twitter:description" content="结论：Java中private方法不能被重写！
-为什么呢？请思考30秒，看看你的Java基本功怎么样…">
+<meta name="twitter:title" content="Bigming">
 
 <link rel="apple-touch-icon" href= "/apple-touch-icon.png">
 
@@ -55,11 +51,13 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
+    <style> .article { opacity: 0;} </style>
+
 
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>Java中private方法能重写吗？ | Bigming</title>
+<title>Bigming</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -68,8 +66,8 @@
     var yiliaConfig = {
         fancybox: true,
         animate: true,
-        isHome: false,
-        isPost: true,
+        isHome: true,
+        isPost: false,
         isArchive: false,
         isTag: false,
         isCategory: false,
@@ -263,11 +261,13 @@
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
-      <div class="body-wrap"><article id="post-Java中private方法能重写吗？" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap">
+  
+    <article id="post-有的没的，写下来的才是你的" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/10/04/Java中private方法能重写吗？/" class="article-date">
-      <time datetime="2016-10-04T14:39:29.000Z" itemprop="datePublished">2016-10-04</time>
+      <a href="/2016/09/21/有的没的，写下来的才是你的/" class="article-date">
+      <time datetime="2016-09-21T12:24:23.000Z" itemprop="datePublished">2016-09-21</time>
 </a>
 
 
@@ -281,130 +281,48 @@
       <header class="article-header">
         
   
-    <h1 class="article-title" itemprop="name">
-      Java中private方法能重写吗？
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a>
     </h1>
   
 
       </header>
       
-      <div class="article-info article-info-post">
-        
-    <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/Java/">Java</a>
-    </div>
-
-
-        
-    <div class="article-tag tagcloud">
-        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/private方法/">private方法</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/重写/">重写</a></li></ul>
-    </div>
-
-        <div class="clearfix"></div>
-      </div>
-      
     
     <div class="article-entry" itemprop="articleBody">
       
           
-        <p>结论：Java中private方法不能被重写！</p>
-<p>为什么呢？请思考30秒，看看你的Java基本功怎么样…</p>
-<a id="more"></a>
-<p>原因：private方法默认是final的，而final方法是不能被继承的。说起来好像挺简单，但是用起来好像又会傻傻分不清楚。比如下面这个小程序，想一想它的输出是什么？<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"A"</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        A a = <span class="keyword">new</span> B();</div><div class="line">        a.print();</div><div class="line">        B b = <span class="keyword">new</span> B();</div><div class="line">        b.print();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"B"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>正确输出是:<br>A<br>B</p>
-<p>对于第二个输出“B”应该没有任何疑问，这里主要的疑问是a.print()为什么会输出“A”？在上面的程序中，Class B的print()方法相当于是B添加的方法，不属于重写！同时，这里采用的是静态绑定，而不是动态绑定！在Java中，private方法、static方法、final方法或者构造器均采用静态绑定，而静态绑定在调用方法时不依赖于隐式参数的实际类型！所以a.print()调用的是Class A的print()方法！</p>
-<p>其实，这只是一个演示的demo程序，在现实的编程中，我们应该尽量避免使用有歧义的同名函数，特别是像上述demo中的情况。良好的命名习惯可以使我们在实际的编程中少走很多弯路。</p>
+              <p><img src="http://oe0nilvpj.bkt.clouddn.com/write.jpg" alt="Write!"></p>
+<p>人总是低估自己的短期记忆能力，高估自己的长期记忆能力。<br>
+          
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/Life/">Life</a>
+    </div>
+
 
       
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/写作/">写作</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/记忆/">记忆</a></li></ul>
+    </div>
+
+      
+        <p class="article-more-link">
+          <a href="/2016/09/21/有的没的，写下来的才是你的/#more">阅读全文 >></a>
+        </p>
+      
+      <div class="clearfix"></div>
     </div>
     
   </div>
   
-    
-    <div class="copyright">
-        <p><span>本文标题:</span><a href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></p>
-        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
-        <p><span>发布时间:</span>2016-10-04, 22:39:29</p>
-        <p><span>最后更新:</span>2016-12-07, 18:23:56</p>
-        <p>
-            <span>原始链接:</span><a class="post-url" href="/2016/10/04/Java中private方法能重写吗？/" title="Java中private方法能重写吗？">http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/</a>
-            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
-            <script> var clipboard = new Clipboard('.copy-path'); </script>
-        </p>
-        <p>
-            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
-        </p>
-    </div>
-
-
-
-    <nav id="article-nav">
-        
-            <div id="article-nav-newer" class="article-nav-title">
-                <a href="/2016/10/09/Java中的字符编码，代码点与代码单元/">
-                    Java中的字符编码，代码点与代码单元
-                </a>
-            </div>
-        
-        
-            <div id="article-nav-older" class="article-nav-title">
-                <a href="/2016/09/21/有的没的，写下来的才是你的/">
-                    有的没的，写下来的才是你的
-                </a>
-            </div>
-        
-    </nav>
-
-  
 </article>
 
-    <div id="toc" class="toc-article">
-        <strong class="toc-title">文章目录</strong>
-        
-            
-        
-    </div>
-    <style>
-        .left-col .switch-btn,
-        .left-col .switch-area {
-            display: none;
-        }
-        .toc-level-6 i,
-        .toc-level-6 ol {
-            display: none !important;
-        }
-    </style>
-
-    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
-
-    <script>
-        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
-    </script>
-
-
-
-    
-<div class="share">
-    
-        <div class="bdsharebuttonbox">
-            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
-            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
-            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
-            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
-            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
-            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
-            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
-        </div>
-        <script>
-            window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"Java中private方法能重写吗？　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
-        </script>
-    
-
-    
-        <div class="addthis_sharing_toolbox"></div>
-    
-</div>
 
 
 
@@ -412,54 +330,13 @@
 
 
 
-    
-      <div class="duoshuo" id="comments">
-    <div id="comment-box" ></div>
-    <div class="ds-thread" id="ds-thread" data-thread-key="2016/10/04/Java中private方法能重写吗？/" data-title="Java中private方法能重写吗？" data-url="http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/"></div>
-    <script>
-        var duoshuoQuery = {short_name:"bigming"};
-        var loadComment = function(){
-            var d = document, s = d.createElement('script');
-            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-            s.async = true; s.charset = 'UTF-8';
-            (d.head || d.body).appendChild(s);
-        }
 
-        
-    </script>
-    
-    <script> loadComment(); </script>
-
-</div>
-    
-
-
-
-
-    <div class="scroll" id="post-nav-button">
-        
-            <a href="/2016/10/09/Java中的字符编码，代码点与代码单元/" title="上一篇: Java中的字符编码，代码点与代码单元">
-                <i class="fa fa-angle-left"></i>
-            </a>
-        
-
-        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
-
-        
-            <a href="/2016/09/21/有的没的，写下来的才是你的/" title="下一篇: 有的没的，写下来的才是你的">
-                <i class="fa fa-angle-right"></i>
-            </a>
-        
-    </div>
-
-    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列（例子，技巧与使用场景）/">深入浅出数据结构之栈与队列（例子，技巧与使用场景）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
-
-
-
-
-    <script>
-        
-    </script>
+  
+  
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    </nav>
+  
 </div>
       <footer id="footer">
     <div class="outer">
