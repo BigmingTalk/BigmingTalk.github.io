@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…
+AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入浅析理解AVL树(含代码实现)">
+<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…
+AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/Tree_Rebalancing.png">
+<meta property="og:updated_time" content="2016-12-27T13:51:57.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入浅析理解AVL树(含代码实现)">
+<meta name="twitter:description" content="之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…
+AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最">
+<meta name="twitter:image" content="http://oe0nilvpj.bkt.clouddn.com/Tree_Rebalancing.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>深入浅析理解AVL树(含代码实现) | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@gmail.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                                <a class="fa 知乎" target="_blank" href="http://www.zhihu.com/people/Bigming" title="知乎"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-深入浅析理解AVL树(含代码实现)" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/12/27/深入浅析理解AVL树(含代码实现)/" class="article-date">
+      <time datetime="2016-12-27T11:58:44.000Z" itemprop="datePublished">2016-12-27</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      深入浅析理解AVL树(含代码实现)
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/数据结构与算法/">数据结构与算法</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AVL/">AVL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代码实现/">代码实现</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…</p>
+<h1 id="AVL概念介绍"><a href="#AVL概念介绍" class="headerlink" title="AVL概念介绍"></a>AVL概念介绍</h1><p>与之前介绍的<a href="http://www.bigming.me/2016/12/26/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8F%8ATreeMap%E6%BA%90%E7%A0%81%E5%AE%9E%E7%8E%B0/" target="_blank" rel="external">红黑树</a>一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最坏情况下都是O(logn)的复杂度，同时对于增加和删除操作则可能需要一次或多次的树旋转来重新平衡这棵树。AVL之所以取这么个名字也完全和到过没有什么关系，而是它们的发明者为G.M. Adelson-Velsky和E.M. Landis，他们在1962年的论文《An algorithm for the organization of information》中发表了它。</p>
+<a id="more"></a>
+<p>在AVL树中，有一个非常重要的概念，就是节点的平衡因子，它等于该节点的左子树的高度减去右子树的高度（当然也可以相反，原理是一致的）。因为AVL树规定树中任何节点的两棵子树的高度最大差别为1，所以当平衡因子只有为1，0，-1时该节点才被认为是平衡的。而带有平衡因子2或-2则认为该节点不平衡，需要对以该节点为根的子树进行旋转重新平衡这棵树。在实际情况中，不可能存在绝对值大于2的平衡因子，因为一旦出现绝对值为2平衡因子时就会对树进行调整，使其重新平衡。</p>
+<p>在实际实现中，平衡因子既可以直接存储在每个节点中，也可以只在节点中存储子树高度，并通过左右子树高度差计算得到。</p>
+<h1 id="AVL树的搜索，插入与删除"><a href="#AVL树的搜索，插入与删除" class="headerlink" title="AVL树的搜索，插入与删除"></a>AVL树的搜索，插入与删除</h1><p>AVL树的搜索，插入与删除操作基本上市与二叉搜索树的操作相同的。唯一的区别在于插入与删除后可能导致树不平衡，需要进行旋转操作来使AVL树重新达到平衡。</p>
+<h2 id="AVL树的搜索"><a href="#AVL树的搜索" class="headerlink" title="AVL树的搜索"></a>AVL树的搜索</h2><p>AVL树的搜索操作非常简单，只需要比较节点值与搜索值的大小关系，若相等，则搜索成功，否则根据大于关系确定是在左子树中继续搜索还是在右子树中继续搜索，直到null节点为止。其复杂度由树的高度决定，即O(logn)。</p>
+<p>AVL树的搜索代码如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 与二叉搜索树相同</span></div><div class="line">   <span class="function"><span class="keyword">private</span> Node <span class="title">search</span><span class="params">(Node root, <span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">       <span class="keyword">if</span> (root == <span class="keyword">null</span> || root.value == value) &#123;</div><div class="line">           <span class="keyword">return</span> root;</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">if</span> (root.value &lt; value) &#123;</div><div class="line">           <span class="keyword">return</span> search(root.right, value);</div><div class="line">       &#125; <span class="keyword">else</span> &#123;</div><div class="line">           <span class="keyword">return</span> search(root.left, value);</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure></p>
+<h2 id="AVL树的旋转操作"><a href="#AVL树的旋转操作" class="headerlink" title="AVL树的旋转操作"></a>AVL树的旋转操作</h2><p><img src="http://oe0nilvpj.bkt.clouddn.com/Tree_Rebalancing.png" alt="LL,RR,LR,RL"><br>AVL树的旋转操作只有四种类型，即LL，RR，LR以及RL，如上图所示。与<a href="http://www.bigming.me/2016/12/26/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8F%8ATreeMap%E6%BA%90%E7%A0%81%E5%AE%9E%E7%8E%B0/" target="_blank" rel="external">红黑树</a>中介绍的树的左旋和右旋其实是一致的。对于LL类型，只需要进行一次右旋即可；对于RR类型，只需要一次左旋即可；对于LR类型，则需要先进行一次左旋，再进行一次右旋；而对于RL类型，则需要先进行一次右旋，再进行一次左旋。</p>
+<p>之所以只有这四种情况是因为在插入之前树是平衡的，当插入数据后不平衡的话，假设不平衡的节点为P，P的左子树为L，右子树为R，则有两种情况：</p>
+<ol>
+<li>平衡因子为2，即左子树的高度减右子树的高度等于2；</li>
+<li>平衡因子为-2，即左子树的高度减右子树的高度等于-2。</li>
+</ol>
+<p>对于情况1，只可能发生在插入的元素在P的左子树L上，但是是在L的左子树上还是L的右子树上则又分为两种情况，即LL类型和LR类型。对于情况2也是类似的。</p>
+<p>同时，对于删除操作也是只有这四种情况的，只是相比于插入操作，删除操作是降低了某一子树的高度。</p>
+<p>下面的旋转代码实现中，我们增加了一个height函数，是为了解决null情况下求高度的问题，当为null时返回高度0即可。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// null节点也认为高度为0</span></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">height</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (node != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> node.height;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// LL旋转，需要注意的是旋转后node节点为l节点的子节点，</span></div><div class="line"><span class="comment">// 所以要先对node节点的height先赋值</span></div><div class="line"><span class="function"><span class="keyword">private</span> Node <span class="title">LLRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">    Node l = node.left;</div><div class="line">    node.left = l.right;</div><div class="line">    l.right = node;</div><div class="line">    node.height = height(node.left) &gt; height(node.right) ? height(node.left) + <span class="number">1</span> : height(node.right) + <span class="number">1</span>;</div><div class="line">    l.height = height(l.left) &gt; height(l.right) ? height(l.left) + <span class="number">1</span> : height(l.right) + <span class="number">1</span>;</div><div class="line">    <span class="keyword">return</span> l;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// RR旋转，需要注意的是旋转后node节点为r节点的子节点，</span></div><div class="line"><span class="comment">// 所以要先对node节点的height先赋值</span></div><div class="line"><span class="function"><span class="keyword">private</span> Node <span class="title">RRRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">    Node r = node.right;</div><div class="line">    node.right = r.left;</div><div class="line">    r.left = node;</div><div class="line">    node.height = height(node.left) &gt; height(node.right) ? height(node.left) + <span class="number">1</span> : height(node.right) + <span class="number">1</span>;</div><div class="line">    r.height = height(r.left) &gt; height(r.right) ? height(r.left) + <span class="number">1</span> : height(r.right) + <span class="number">1</span>;</div><div class="line">    <span class="keyword">return</span> r;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// LR旋转，先对node.left进行RR旋转，再对node进行LL旋转</span></div><div class="line"><span class="function"><span class="keyword">private</span> Node <span class="title">LRRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">    node.left = RRRotation(node.left);</div><div class="line">    <span class="keyword">return</span> LLRotation(node);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// RL旋转，先对node.right进行LL旋转，再对node进行RR旋转</span></div><div class="line"><span class="function"><span class="keyword">private</span> Node <span class="title">RLRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">    node.right = LLRotation(node.right);</div><div class="line">    <span class="keyword">return</span> RRRotation(node);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="AVL树的插入操作"><a href="#AVL树的插入操作" class="headerlink" title="AVL树的插入操作"></a>AVL树的插入操作</h2><p>AVL树的插入操作与二叉搜索树的插入是类似的，插入位置是在叶节点，不过在插入后需要重新计算其高度值。并且当其平衡因子为2或-2时，需要根据具体情况来做旋转操作。插入操作是通过递归来实现的，通过带返回的特性从而使在删除回溯过程中树能够顺利连接起来！当然，也可以不用递归实现插入操作，只不过那样需要对节点引入父指针，因为在旋转过程中需要重新对不平衡节点的父节点的左（或右）子树节点值进行修改。</p>
+<p>插入过程代码如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 插入函数，通过递归实现，插入后需要进行高度判断</span></div><div class="line"><span class="function"><span class="keyword">private</span> Node <span class="title">insert</span><span class="params">(Node root, <span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span>) &#123;</div><div class="line">        root = <span class="keyword">new</span> Node(value, <span class="keyword">null</span>, <span class="keyword">null</span>);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> (root.value &lt; value) &#123; <span class="comment">// root右边插入</span></div><div class="line">            root.right = insert(root.right, value); <span class="comment">// 递归实现</span></div><div class="line">            <span class="keyword">if</span> (height(root.right) - height(root.left) == <span class="number">2</span>) &#123;</div><div class="line">                <span class="keyword">if</span> (root.right.value &gt; value) &#123; <span class="comment">// 说明插入元素在root.right.left子树上</span></div><div class="line">                    root = RLRotation(root);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    root = RRRotation(root); <span class="comment">// 说明插入元素在root.right.right子树上</span></div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (root.value &gt; value)&#123;</div><div class="line">            root.left = insert(root.left, value); <span class="comment">// 与上面情况是对称的</span></div><div class="line">            <span class="keyword">if</span> (height(root.left) - height(root.right) == <span class="number">2</span>) &#123;</div><div class="line">                <span class="keyword">if</span> (root.left.value &gt; value) &#123;</div><div class="line">                    root = LLRotation(root);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    root = LRRotation(root);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            System.out.println(<span class="string">"insert error, value exists"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 插入后重新调整树的高度，这里也是递归结束后回溯实现的</span></div><div class="line">    root.height = height(root.left) &gt; height(root.right) ? height(root.left) + <span class="number">1</span> : height(root.right) + <span class="number">1</span>;</div><div class="line">    <span class="keyword">return</span> root;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="AVL树的删除过程"><a href="#AVL树的删除过程" class="headerlink" title="AVL树的删除过程"></a>AVL树的删除过程</h2><p>AVL删除过程与二叉搜索树的删除过程也是类似的，一般有3种情况：</p>
+<ol>
+<li>删除节点为叶节点</li>
+<li>删除节点的左子树和右子树恰好有一个为空</li>
+<li>删除节点的左子树和右子树都不为空</li>
+</ol>
+<p>对于第一种情况，直接删除即可，在代码实现中即赋值为null；对于第二种情况，则是让删除节点的父节点直接跳过删除节点，连接到删除节点的左子树（右子树为空时）或右子树（左子树为空时）。对于第三种情况，则是找到删除节点左子树中的最右节点或删除节点右子树的最左节点，假设该节点为P，然后将P节点的值赋给删除的节点，然后递归地在其左子树或右子树中删除P（因为P是最左或最右节点，肯定最多只有一个孩子，所以递归不会一直进行下去）。</p>
+<p>删除操作与插入操作一样，也是递归实现的，并且通过带返回的特性从而使在删除回溯过程中树能够顺利连接起来，在连接起来后需要重新计算平衡因子，若不平衡则对树进行特定的旋转，使其重新达到平衡。并且在返回时需要重新计算返回节点的高度值。</p>
+<p>删除的代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 删除节点</span></div><div class="line"><span class="function"><span class="keyword">private</span> Node <span class="title">remove</span><span class="params">(Node root, <span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (root.value &lt; value) &#123; <span class="comment">// 在右子树中删除</span></div><div class="line">        root.right = remove(root.right, value);</div><div class="line">        <span class="keyword">if</span> (height(root.left) - height(root.right) == <span class="number">2</span>) &#123; <span class="comment">// 右子树删除高度可能会变低</span></div><div class="line">            <span class="keyword">if</span> (height(root.left.left) &gt; height(root.left.right)) &#123; <span class="comment">// 属于LL类型</span></div><div class="line">                root = LLRotation(root);</div><div class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 属于LR类型</span></div><div class="line">                root = LRRotation(root);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (root.value &gt; value) &#123; <span class="comment">// 在左子树中删除</span></div><div class="line">        root.left = remove(root.left, value);</div><div class="line">        <span class="keyword">if</span> (height(root.right) - height(root.left) == <span class="number">2</span>) &#123; <span class="comment">// 左子树删除高度可能会变低</span></div><div class="line">            <span class="keyword">if</span> (height(root.right.right) &gt; height(root.right.left)) &#123;</div><div class="line">                root = RRRotation(root);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                root = RLRotation(root);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">else</span> &#123; <span class="comment">// 找到要删除的元素</span></div><div class="line">        <span class="keyword">if</span> (root.left != <span class="keyword">null</span> &amp;&amp; root.right != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="comment">/*</span></div><div class="line">            两个子树都非空的情况，则</div><div class="line">            1. 根据左右子树树高找到左子树最大节点或右子树最小节点</div><div class="line">            2. 将该节点的值赋值给root</div><div class="line">            3. 递归删除该节点</div><div class="line">             */</div><div class="line">            <span class="keyword">if</span> (height(root.left) &gt; height(root.right)) &#123;</div><div class="line">                Node l = root.left;</div><div class="line">                <span class="keyword">while</span> (l.right != <span class="keyword">null</span>) &#123;</div><div class="line">                    l = l.right;</div><div class="line">                &#125;</div><div class="line">                root.value = l.value;</div><div class="line">                root.left = remove(root.left, l.value);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                Node r = root.right;</div><div class="line">                <span class="keyword">while</span> (r.left != <span class="keyword">null</span>) &#123;</div><div class="line">                    r = r.left;</div><div class="line">                &#125;</div><div class="line">                root.value = r.value;</div><div class="line">                root.right = remove(root.right, r.value);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 有一个孩子为空，则把该孩子返回即可，都为空则是返回null，回溯的时候会将连接关系补好.</span></div><div class="line">            root = root.left != <span class="keyword">null</span> ? root.left : root.right;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span>(root != <span class="keyword">null</span>)</div><div class="line">        root.height = height(root.left) &gt; height(root.right) ? height(root.left) + <span class="number">1</span> : height(root.right) + <span class="number">1</span>;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> root;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="所有代码"><a href="#所有代码" class="headerlink" title="所有代码"></a>所有代码</h2><p>关于AVL树的所有代码如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 16/12/27.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AVLTree</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> Node root;</div><div class="line"></div><div class="line">    <span class="comment">// AVL树节点类，含有高度，</span></div><div class="line">    <span class="comment">// 高度是指从叶节点到该节点的高度，叶节点高度为0.</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> value;</div><div class="line">        <span class="keyword">int</span> height;</div><div class="line">        Node left;</div><div class="line">        Node right;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(<span class="keyword">int</span> value, Node left, Node right)</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.value = value;</div><div class="line">            <span class="keyword">this</span>.left = left;</div><div class="line">            <span class="keyword">this</span>.right = right;</div><div class="line">            <span class="keyword">this</span>.height = <span class="number">1</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AVLTree</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.root = <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 与二叉搜索树相同</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">search</span><span class="params">(Node root, <span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (root == <span class="keyword">null</span> || root.value == value) &#123;</div><div class="line">            <span class="keyword">return</span> root;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (root.value &lt; value) &#123;</div><div class="line">            <span class="keyword">return</span> search(root.right, value);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">return</span> search(root.left, value);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// null节点也认为高度为0</span></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">height</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (node != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">return</span> node.height;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// LL旋转，需要注意的是旋转后node节点为l节点的子节点，</span></div><div class="line">    <span class="comment">// 所以要先对node节点的height先赋值</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">LLRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">        Node l = node.left;</div><div class="line">        node.left = l.right;</div><div class="line">        l.right = node;</div><div class="line">        node.height = height(node.left) &gt; height(node.right) ? height(node.left) + <span class="number">1</span> : height(node.right) + <span class="number">1</span>;</div><div class="line">        l.height = height(l.left) &gt; height(l.right) ? height(l.left) + <span class="number">1</span> : height(l.right) + <span class="number">1</span>;</div><div class="line">        <span class="keyword">return</span> l;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// RR旋转，需要注意的是旋转后node节点为r节点的子节点，</span></div><div class="line">    <span class="comment">// 所以要先对node节点的height先赋值</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">RRRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">        Node r = node.right;</div><div class="line">        node.right = r.left;</div><div class="line">        r.left = node;</div><div class="line">        node.height = height(node.left) &gt; height(node.right) ? height(node.left) + <span class="number">1</span> : height(node.right) + <span class="number">1</span>;</div><div class="line">        r.height = height(r.left) &gt; height(r.right) ? height(r.left) + <span class="number">1</span> : height(r.right) + <span class="number">1</span>;</div><div class="line">        <span class="keyword">return</span> r;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// LR旋转，先对node.left进行RR旋转，再对node进行LL旋转</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">LRRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">        node.left = RRRotation(node.left);</div><div class="line">        <span class="keyword">return</span> LLRotation(node);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// RL旋转，先对node.right进行LL旋转，再对node进行RR旋转</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">RLRotation</span><span class="params">(Node node)</span> </span>&#123;</div><div class="line">        node.right = LLRotation(node.right);</div><div class="line">        <span class="keyword">return</span> RRRotation(node);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 插入函数，通过递归实现，插入后需要进行高度判断</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">insert</span><span class="params">(Node root, <span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (root == <span class="keyword">null</span>) &#123;</div><div class="line">            root = <span class="keyword">new</span> Node(value, <span class="keyword">null</span>, <span class="keyword">null</span>);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">if</span> (root.value &lt; value) &#123; <span class="comment">// root右边插入</span></div><div class="line">                root.right = insert(root.right, value); <span class="comment">// 递归实现</span></div><div class="line">                <span class="keyword">if</span> (height(root.right) - height(root.left) == <span class="number">2</span>) &#123;</div><div class="line">                    <span class="keyword">if</span> (root.right.value &gt; value) &#123; <span class="comment">// 说明插入元素在root.right.left子树上</span></div><div class="line">                        root = RLRotation(root);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        root = RRRotation(root); <span class="comment">// 说明插入元素在root.right.right子树上</span></div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (root.value &gt; value)&#123;</div><div class="line">                root.left = insert(root.left, value); <span class="comment">// 与上面情况是对称的</span></div><div class="line">                <span class="keyword">if</span> (height(root.left) - height(root.right) == <span class="number">2</span>) &#123;</div><div class="line">                    <span class="keyword">if</span> (root.left.value &gt; value) &#123;</div><div class="line">                        root = LLRotation(root);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        root = LRRotation(root);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                System.out.println(<span class="string">"insert error, value exists"</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// 插入后重新调整树的高度，这里也是递归结束后回溯实现的</span></div><div class="line">        root.height = height(root.left) &gt; height(root.right) ? height(root.left) + <span class="number">1</span> : height(root.right) + <span class="number">1</span>;</div><div class="line">        <span class="keyword">return</span> root;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 删除节点</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Node <span class="title">remove</span><span class="params">(Node root, <span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (root == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (root.value &lt; value) &#123; <span class="comment">// 在右子树中删除</span></div><div class="line">            root.right = remove(root.right, value);</div><div class="line">            <span class="keyword">if</span> (height(root.left) - height(root.right) == <span class="number">2</span>) &#123; <span class="comment">// 右子树删除高度可能会变低</span></div><div class="line">                <span class="keyword">if</span> (height(root.left.left) &gt; height(root.left.right)) &#123; <span class="comment">// 属于LL类型</span></div><div class="line">                    root = LLRotation(root);</div><div class="line">                &#125; <span class="keyword">else</span> &#123; <span class="comment">// 属于LR类型</span></div><div class="line">                    root = LRRotation(root);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (root.value &gt; value) &#123; <span class="comment">// 在左子树中删除</span></div><div class="line">            root.left = remove(root.left, value);</div><div class="line">            <span class="keyword">if</span> (height(root.right) - height(root.left) == <span class="number">2</span>) &#123; <span class="comment">// 左子树删除高度可能会变低</span></div><div class="line">                <span class="keyword">if</span> (height(root.right.right) &gt; height(root.right.left)) &#123;</div><div class="line">                    root = RRRotation(root);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    root = RLRotation(root);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 找到要删除的元素</span></div><div class="line">            <span class="keyword">if</span> (root.left != <span class="keyword">null</span> &amp;&amp; root.right != <span class="keyword">null</span>) &#123;</div><div class="line">                <span class="comment">/*</span></div><div class="line">                两个子树都非空的情况，则</div><div class="line">                1. 根据左右子树树高找到左子树最大节点或右子树最小节点</div><div class="line">                2. 将该节点的值赋值给root</div><div class="line">                3. 递归删除该节点</div><div class="line">                 */</div><div class="line">                <span class="keyword">if</span> (height(root.left) &gt; height(root.right)) &#123;</div><div class="line">                    Node l = root.left;</div><div class="line">                    <span class="keyword">while</span> (l.right != <span class="keyword">null</span>) &#123;</div><div class="line">                        l = l.right;</div><div class="line">                    &#125;</div><div class="line">                    root.value = l.value;</div><div class="line">                    root.left = remove(root.left, l.value);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    Node r = root.right;</div><div class="line">                    <span class="keyword">while</span> (r.left != <span class="keyword">null</span>) &#123;</div><div class="line">                        r = r.left;</div><div class="line">                    &#125;</div><div class="line">                    root.value = r.value;</div><div class="line">                    root.right = remove(root.right, r.value);</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 有一个孩子为空，则把该孩子返回即可，都为空则是返回null，回溯的时候会将连接关系补好.</span></div><div class="line">                root = root.left != <span class="keyword">null</span> ? root.left : root.right;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span>(root != <span class="keyword">null</span>)</div><div class="line">            root.height = height(root.left) &gt; height(root.right) ? height(root.left) + <span class="number">1</span> : height(root.right) + <span class="number">1</span>;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> root;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 打印二叉树的连接关系</span></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">(Node root)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (root != <span class="keyword">null</span>) &#123;</div><div class="line">            System.out.println(<span class="string">"value: "</span> + root.value);</div><div class="line">            <span class="keyword">if</span> (root.left != <span class="keyword">null</span>) &#123;</div><div class="line">                System.out.printf(<span class="string">"%2d is %2d's left child \n"</span>, root.left.value, root.value);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (root.right != <span class="keyword">null</span>) &#123;</div><div class="line">                System.out.printf(<span class="string">"%2d is %2d's right child \n"</span>, root.right.value, root.value);</div><div class="line">            &#125;</div><div class="line">            print(root.left);</div><div class="line">            print(root.right);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> arr[] = <span class="keyword">new</span> <span class="keyword">int</span>[] &#123;<span class="number">3</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">16</span>,<span class="number">15</span>,<span class="number">14</span>,<span class="number">13</span>,<span class="number">12</span>,<span class="number">11</span>,<span class="number">10</span>,<span class="number">8</span>,<span class="number">9</span>&#125;;</div><div class="line">        AVLTree tree = <span class="keyword">new</span> AVLTree();</div><div class="line"></div><div class="line">        System.out.println(<span class="string">"Insertion starts.........."</span>);</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != arr.length; i++) &#123;</div><div class="line">            tree.root = tree.insert(tree.root, arr[i]);</div><div class="line">            System.out.println(arr[i] + <span class="string">" inserted"</span>);</div><div class="line">            tree.print(tree.root);</div><div class="line">            System.out.println(<span class="string">"****************"</span>);</div><div class="line">        &#125;</div><div class="line">        System.out.println(<span class="string">"Insertion ends........."</span>);</div><div class="line"></div><div class="line">        System.out.println(<span class="string">"#####################"</span>);</div><div class="line"></div><div class="line">        System.out.println(<span class="string">"Delete starts.........."</span>);</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = arr.length - <span class="number">1</span>; i != -<span class="number">1</span>; i--) &#123;</div><div class="line">            tree.root = tree.remove(tree.root, arr[i]);</div><div class="line">            System.out.println(arr[i] + <span class="string">" removed"</span>);</div><div class="line">            tree.print(tree.root);</div><div class="line">            System.out.println(<span class="string">"*****************"</span>);</div><div class="line">        &#125;</div><div class="line">        System.out.println(<span class="string">"Delete ends............"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其输出为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div><div class="line">260</div><div class="line">261</div><div class="line">262</div><div class="line">263</div><div class="line">264</div><div class="line">265</div><div class="line">266</div><div class="line">267</div><div class="line">268</div><div class="line">269</div><div class="line">270</div><div class="line">271</div><div class="line">272</div><div class="line">273</div><div class="line">274</div><div class="line">275</div><div class="line">276</div><div class="line">277</div><div class="line">278</div><div class="line">279</div><div class="line">280</div><div class="line">281</div><div class="line">282</div><div class="line">283</div><div class="line">284</div><div class="line">285</div><div class="line">286</div><div class="line">287</div><div class="line">288</div><div class="line">289</div><div class="line">290</div><div class="line">291</div><div class="line">292</div><div class="line">293</div><div class="line">294</div><div class="line">295</div><div class="line">296</div><div class="line">297</div><div class="line">298</div><div class="line">299</div><div class="line">300</div><div class="line">301</div><div class="line">302</div><div class="line">303</div><div class="line">304</div><div class="line">305</div><div class="line">306</div><div class="line">307</div><div class="line">308</div><div class="line">309</div><div class="line">310</div><div class="line">311</div><div class="line">312</div><div class="line">313</div><div class="line">314</div><div class="line">315</div><div class="line">316</div><div class="line">317</div><div class="line">318</div><div class="line">319</div><div class="line">320</div><div class="line">321</div><div class="line">322</div><div class="line">323</div><div class="line">324</div><div class="line">325</div><div class="line">326</div><div class="line">327</div><div class="line">328</div><div class="line">329</div><div class="line">330</div><div class="line">331</div><div class="line">332</div><div class="line">333</div><div class="line">334</div><div class="line">335</div><div class="line">336</div><div class="line">337</div><div class="line">338</div><div class="line">339</div><div class="line">340</div><div class="line">341</div><div class="line">342</div><div class="line">343</div><div class="line">344</div><div class="line">345</div><div class="line">346</div><div class="line">347</div><div class="line">348</div><div class="line">349</div><div class="line">350</div><div class="line">351</div><div class="line">352</div><div class="line">353</div><div class="line">354</div><div class="line">355</div><div class="line">356</div><div class="line">357</div><div class="line">358</div><div class="line">359</div><div class="line">360</div><div class="line">361</div><div class="line">362</div><div class="line">363</div><div class="line">364</div><div class="line">365</div><div class="line">366</div><div class="line">367</div><div class="line">368</div><div class="line">369</div><div class="line">370</div><div class="line">371</div><div class="line">372</div><div class="line">373</div><div class="line">374</div><div class="line">375</div><div class="line">376</div><div class="line">377</div><div class="line">378</div><div class="line">379</div><div class="line">380</div><div class="line">381</div><div class="line">382</div><div class="line">383</div><div class="line">384</div><div class="line">385</div><div class="line">386</div><div class="line">387</div><div class="line">388</div><div class="line">389</div><div class="line">390</div><div class="line">391</div><div class="line">392</div><div class="line">393</div><div class="line">394</div><div class="line">395</div><div class="line">396</div><div class="line">397</div><div class="line">398</div><div class="line">399</div><div class="line">400</div><div class="line">401</div><div class="line">402</div><div class="line">403</div><div class="line">404</div><div class="line">405</div><div class="line">406</div><div class="line">407</div><div class="line">408</div><div class="line">409</div><div class="line">410</div><div class="line">411</div><div class="line">412</div><div class="line">413</div><div class="line">414</div><div class="line">415</div><div class="line">416</div><div class="line">417</div><div class="line">418</div><div class="line">419</div><div class="line">420</div><div class="line">421</div><div class="line">422</div><div class="line">423</div><div class="line">424</div><div class="line">425</div><div class="line">426</div><div class="line">427</div><div class="line">428</div><div class="line">429</div><div class="line">430</div><div class="line">431</div><div class="line">432</div><div class="line">433</div><div class="line">434</div><div class="line">435</div><div class="line">436</div><div class="line">437</div><div class="line">438</div><div class="line">439</div><div class="line">440</div><div class="line">441</div><div class="line">442</div><div class="line">443</div><div class="line">444</div><div class="line">445</div><div class="line">446</div><div class="line">447</div><div class="line">448</div><div class="line">449</div><div class="line">450</div><div class="line">451</div><div class="line">452</div><div class="line">453</div><div class="line">454</div><div class="line">455</div><div class="line">456</div><div class="line">457</div><div class="line">458</div><div class="line">459</div><div class="line">460</div><div class="line">461</div><div class="line">462</div><div class="line">463</div><div class="line">464</div><div class="line">465</div><div class="line">466</div><div class="line">467</div><div class="line">468</div><div class="line">469</div><div class="line">470</div><div class="line">471</div><div class="line">472</div><div class="line">473</div><div class="line">474</div><div class="line">475</div><div class="line">476</div><div class="line">477</div><div class="line">478</div><div class="line">479</div><div class="line">480</div><div class="line">481</div><div class="line">482</div><div class="line">483</div><div class="line">484</div><div class="line">485</div><div class="line">486</div><div class="line">487</div><div class="line">488</div><div class="line">489</div><div class="line">490</div><div class="line">491</div><div class="line">492</div><div class="line">493</div><div class="line">494</div><div class="line">495</div><div class="line">496</div><div class="line">497</div><div class="line">498</div><div class="line">499</div><div class="line">500</div><div class="line">501</div><div class="line">502</div><div class="line">503</div><div class="line">504</div><div class="line">505</div><div class="line">506</div><div class="line">507</div><div class="line">508</div><div class="line">509</div><div class="line">510</div><div class="line">511</div><div class="line">512</div><div class="line">513</div><div class="line">514</div><div class="line">515</div><div class="line">516</div><div class="line">517</div><div class="line">518</div><div class="line">519</div><div class="line">520</div><div class="line">521</div><div class="line">522</div><div class="line">523</div><div class="line">524</div><div class="line">525</div><div class="line">526</div><div class="line">527</div><div class="line">528</div><div class="line">529</div><div class="line">530</div><div class="line">531</div><div class="line">532</div><div class="line">533</div><div class="line">534</div><div class="line">535</div><div class="line">536</div><div class="line">537</div><div class="line">538</div><div class="line">539</div><div class="line">540</div><div class="line">541</div><div class="line">542</div><div class="line">543</div><div class="line">544</div><div class="line">545</div><div class="line">546</div><div class="line">547</div><div class="line">548</div><div class="line">549</div><div class="line">550</div><div class="line">551</div><div class="line">552</div></pre></td><td class="code"><pre><div class="line">Insertion starts..........</div><div class="line">3 inserted</div><div class="line">value: 3</div><div class="line">****************</div><div class="line">2 inserted</div><div class="line">value: 3</div><div class="line"> 2 is  3&apos;s left child </div><div class="line">value: 2</div><div class="line">****************</div><div class="line">1 inserted</div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">****************</div><div class="line">4 inserted</div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line"> 4 is  3&apos;s right child </div><div class="line">value: 4</div><div class="line">****************</div><div class="line">5 inserted</div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 4 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 4</div><div class="line"> 3 is  4&apos;s left child </div><div class="line"> 5 is  4&apos;s right child </div><div class="line">value: 3</div><div class="line">value: 5</div><div class="line">****************</div><div class="line">6 inserted</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 5 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 5</div><div class="line"> 6 is  5&apos;s right child </div><div class="line">value: 6</div><div class="line">****************</div><div class="line">7 inserted</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line"> 7 is  6&apos;s right child </div><div class="line">value: 5</div><div class="line">value: 7</div><div class="line">****************</div><div class="line">16 inserted</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line"> 7 is  6&apos;s right child </div><div class="line">value: 5</div><div class="line">value: 7</div><div class="line">16 is  7&apos;s right child </div><div class="line">value: 16</div><div class="line">****************</div><div class="line">15 inserted</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">15 is  6&apos;s right child </div><div class="line">value: 5</div><div class="line">value: 15</div><div class="line"> 7 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 7</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">14 inserted</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 7 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 7</div><div class="line"> 6 is  7&apos;s left child </div><div class="line">15 is  7&apos;s right child </div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">13 inserted</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">15 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">13 is 14&apos;s left child </div><div class="line">value: 13</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">12 inserted</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">15 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 15</div><div class="line">13 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 13</div><div class="line">12 is 13&apos;s left child </div><div class="line">14 is 13&apos;s right child </div><div class="line">value: 12</div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">11 inserted</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">12 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 12</div><div class="line">11 is 12&apos;s left child </div><div class="line">value: 11</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">10 inserted</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">11 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 11</div><div class="line">10 is 11&apos;s left child </div><div class="line">12 is 11&apos;s right child </div><div class="line">value: 10</div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">8 inserted</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">11 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 11</div><div class="line">10 is 11&apos;s left child </div><div class="line">12 is 11&apos;s right child </div><div class="line">value: 10</div><div class="line"> 8 is 10&apos;s left child </div><div class="line">value: 8</div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">9 inserted</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">11 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 11</div><div class="line"> 9 is 11&apos;s left child </div><div class="line">12 is 11&apos;s right child </div><div class="line">value: 9</div><div class="line"> 8 is  9&apos;s left child </div><div class="line">10 is  9&apos;s right child </div><div class="line">value: 8</div><div class="line">value: 10</div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">****************</div><div class="line">Insertion ends.........</div><div class="line">#####################</div><div class="line">Delete starts..........</div><div class="line">9 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">11 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 11</div><div class="line">10 is 11&apos;s left child </div><div class="line">12 is 11&apos;s right child </div><div class="line">value: 10</div><div class="line"> 8 is 10&apos;s left child </div><div class="line">value: 8</div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">8 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">11 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 11</div><div class="line">10 is 11&apos;s left child </div><div class="line">12 is 11&apos;s right child </div><div class="line">value: 10</div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">10 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">11 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 11</div><div class="line">12 is 11&apos;s right child </div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">11 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">13 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 13</div><div class="line">12 is 13&apos;s left child </div><div class="line">15 is 13&apos;s right child </div><div class="line">value: 12</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">12 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">14 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 14</div><div class="line">13 is 14&apos;s left child </div><div class="line">15 is 14&apos;s right child </div><div class="line">value: 13</div><div class="line">value: 15</div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">13 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">15 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 15</div><div class="line">14 is 15&apos;s left child </div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 14</div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">14 removed</div><div class="line">value: 7</div><div class="line"> 4 is  7&apos;s left child </div><div class="line">15 is  7&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">value: 15</div><div class="line">16 is 15&apos;s right child </div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">15 removed</div><div class="line">value: 6</div><div class="line"> 4 is  6&apos;s left child </div><div class="line"> 7 is  6&apos;s right child </div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 5 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 5</div><div class="line">value: 7</div><div class="line">16 is  7&apos;s right child </div><div class="line">value: 16</div><div class="line">*****************</div><div class="line">16 removed</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line"> 7 is  6&apos;s right child </div><div class="line">value: 5</div><div class="line">value: 7</div><div class="line">*****************</div><div class="line">7 removed</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 6 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 6</div><div class="line"> 5 is  6&apos;s left child </div><div class="line">value: 5</div><div class="line">*****************</div><div class="line">6 removed</div><div class="line">value: 4</div><div class="line"> 2 is  4&apos;s left child </div><div class="line"> 5 is  4&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">value: 5</div><div class="line">*****************</div><div class="line">5 removed</div><div class="line">value: 3</div><div class="line"> 2 is  3&apos;s left child </div><div class="line"> 4 is  3&apos;s right child </div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line">value: 1</div><div class="line">value: 4</div><div class="line">*****************</div><div class="line">4 removed</div><div class="line">value: 2</div><div class="line"> 1 is  2&apos;s left child </div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 1</div><div class="line">value: 3</div><div class="line">*****************</div><div class="line">1 removed</div><div class="line">value: 2</div><div class="line"> 3 is  2&apos;s right child </div><div class="line">value: 3</div><div class="line">*****************</div><div class="line">2 removed</div><div class="line">value: 3</div><div class="line">*****************</div><div class="line">3 removed</div><div class="line">*****************</div><div class="line">Delete ends............</div><div class="line"></div><div class="line">Process finished with exit code 0</div></pre></td></tr></table></figure></p>
+<p>通过对一串树顺序插入并逆序删除，可以发现在拥有相同元素的情况下其插入时树的形态与删除时树的形态是不一定相同的，比如在插入16后树中含有的元素有{3,2,1,4,5,6,7,16}，其是以4为根节点的，而在删除过程中删除15后，元素也是{3,2,1,4,5,6,7,16}，但是以6为根节点的，虽然两棵树形态不同，但是它们都是平衡的。并且如果在删除16后，元素只有{3,2,1,4,5,6,7}时，插入时状态和删除时状态又是相同的。所以，AVL树的插入和删除即便插入与删除的过程时逆序的，也不能保证树的形态在拥有相同元素时式相同的！</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>AVL树是一种高度平衡的自平衡二叉树，也正是因为其对平衡的要求很高，所以于红黑树相比，其插入和删除操作虽然平均时间复杂度和红黑树一样都是O(logn)，但是AVL树往往需要进行更多的旋转操作，所以在插入和删除时所需要的时间比红黑树要高。但是，又因为其高度平衡性，其搜索的时间复杂度与红黑树相比虽然都为O(logn)，但是实际时间往往比红黑树要好一些。所以，当我们的数据需要频繁插入删除，而很少查询时，应选用红黑树；反之，当插入和删除操作很少而查询操作很多时，应选用AVL树。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://zh.wikipedia.org/wiki/AVL%E6%A0%91" target="_blank" rel="external">https://zh.wikipedia.org/wiki/AVL%E6%A0%91</a><br><a href="http://blog.chinaunix.net/uid-28852942-id-4035450.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-28852942-id-4035450.html</a><br><a href="http://www.jianshu.com/p/e57752ac321b" target="_blank" rel="external">http://www.jianshu.com/p/e57752ac321b</a><br><a href="http://www.cnblogs.com/skywang12345/p/3577479.html" target="_blank" rel="external">http://www.cnblogs.com/skywang12345/p/3577479.html</a><br><a href="https://github.com/PeterRK/DSGO/blob/master/book/pages/05-A.md" target="_blank" rel="external">https://github.com/PeterRK/DSGO/blob/master/book/pages/05-A.md</a><br><a href="http://blog.csdn.net/lpp0900320123/article/details/39367451" target="_blank" rel="external">http://blog.csdn.net/lpp0900320123/article/details/39367451</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2016/12/27/深入浅析理解AVL树(含代码实现)/">深入浅析理解AVL树(含代码实现)</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2016-12-27, 19:58:44</p>
+        <p><span>最后更新:</span>2016-12-27, 21:51:57</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2016/12/27/深入浅析理解AVL树(含代码实现)/" title="深入浅析理解AVL树(含代码实现)">http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2016/12/26/说说卡特兰数/">
+                    说说卡特兰数
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AVL概念介绍"><span class="toc-number">1.</span> <span class="toc-text">AVL概念介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#AVL树的搜索，插入与删除"><span class="toc-number">2.</span> <span class="toc-text">AVL树的搜索，插入与删除</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#AVL树的搜索"><span class="toc-number">2.1.</span> <span class="toc-text">AVL树的搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AVL树的旋转操作"><span class="toc-number">2.2.</span> <span class="toc-text">AVL树的旋转操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AVL树的插入操作"><span class="toc-number">2.3.</span> <span class="toc-text">AVL树的插入操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AVL树的删除过程"><span class="toc-number">2.4.</span> <span class="toc-text">AVL树的删除过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#所有代码"><span class="toc-number">2.5.</span> <span class="toc-text">所有代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"深入浅析理解AVL树(含代码实现)　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2016/12/27/深入浅析理解AVL树(含代码实现)/" data-title="深入浅析理解AVL树(含代码实现)" data-url="http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2016/12/26/说说卡特兰数/" title="下一篇: 说说卡特兰数">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树(含代码实现)/">深入浅析理解AVL树(含代码实现)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列（例子，技巧与使用场景）/">深入浅出数据结构之栈与队列（例子，技巧与使用场景）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
