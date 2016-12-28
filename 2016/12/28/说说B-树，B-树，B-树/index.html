@@ -15,16 +15,33 @@
 
 
 
-<meta name="description" content="Java中有个static关键字，想必大家都很熟悉。static字面上可以理解为“全局”或者“静态”的意思， 同时static可以用来修饰成员变量，成员方法，也可以用来修饰静态代码块，甚至可以用来修饰内部可以用来修饰静态内部类。">
+<meta name="description" content="在开始介绍今天的各种树之前，有必要把一些概念说清楚。
+
+Binary Tree（二叉树）：二叉树的每个节点最多有两个子节点
+Binary Search Tree（二叉搜索树）：二叉搜索树每个节点只存储一个键值，并且左子树（如果有）所有节点的值都要小于根节点的值，右子树（如果有）所有节点的值都要大于根节点的值。
+B-Tree（Balanced Tree）：也就是今天要说的B-树，这里的-不是minu">
 <meta property="og:type" content="article">
-<meta property="og:title" content="说说Java中的静态内部类">
-<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/01/说说Java中的静态内部类/index.html">
+<meta property="og:title" content="说说B-树，B+树，B*树">
+<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/28/说说B-树，B-树，B-树/index.html">
 <meta property="og:site_name" content="Bigming">
-<meta property="og:description" content="Java中有个static关键字，想必大家都很熟悉。static字面上可以理解为“全局”或者“静态”的意思， 同时static可以用来修饰成员变量，成员方法，也可以用来修饰静态代码块，甚至可以用来修饰内部可以用来修饰静态内部类。">
-<meta property="og:updated_time" content="2016-12-07T11:12:51.000Z">
+<meta property="og:description" content="在开始介绍今天的各种树之前，有必要把一些概念说清楚。
+
+Binary Tree（二叉树）：二叉树的每个节点最多有两个子节点
+Binary Search Tree（二叉搜索树）：二叉搜索树每个节点只存储一个键值，并且左子树（如果有）所有节点的值都要小于根节点的值，右子树（如果有）所有节点的值都要大于根节点的值。
+B-Tree（Balanced Tree）：也就是今天要说的B-树，这里的-不是minu">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/B-Tree.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/B-Tree.gif">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/B+Tree.png">
+<meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/B+Tree.gif">
+<meta property="og:updated_time" content="2016-12-28T14:27:29.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="说说Java中的静态内部类">
-<meta name="twitter:description" content="Java中有个static关键字，想必大家都很熟悉。static字面上可以理解为“全局”或者“静态”的意思， 同时static可以用来修饰成员变量，成员方法，也可以用来修饰静态代码块，甚至可以用来修饰内部可以用来修饰静态内部类。">
+<meta name="twitter:title" content="说说B-树，B+树，B*树">
+<meta name="twitter:description" content="在开始介绍今天的各种树之前，有必要把一些概念说清楚。
+
+Binary Tree（二叉树）：二叉树的每个节点最多有两个子节点
+Binary Search Tree（二叉搜索树）：二叉搜索树每个节点只存储一个键值，并且左子树（如果有）所有节点的值都要小于根节点的值，右子树（如果有）所有节点的值都要大于根节点的值。
+B-Tree（Balanced Tree）：也就是今天要说的B-树，这里的-不是minu">
+<meta name="twitter:image" content="http://oe0nilvpj.bkt.clouddn.com/B-Tree.png">
 
 <link rel="apple-touch-icon" href= "/apple-touch-icon.png">
 
@@ -56,7 +73,7 @@
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>说说Java中的静态内部类 | Bigming</title>
+<title>说说B-树，B+树，B*树 | Bigming</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -260,11 +277,11 @@
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
-      <div class="body-wrap"><article id="post-说说Java中的静态内部类" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-说说B-树，B-树，B-树" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/12/01/说说Java中的静态内部类/" class="article-date">
-      <time datetime="2016-12-01T04:22:23.000Z" itemprop="datePublished">2016-12-01</time>
+      <a href="/2016/12/28/说说B-树，B-树，B-树/" class="article-date">
+      <time datetime="2016-12-28T11:58:20.000Z" itemprop="datePublished">2016-12-28</time>
 </a>
 
 
@@ -279,7 +296,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      说说Java中的静态内部类
+      说说B-树，B+树，B*树
     </h1>
   
 
@@ -288,15 +305,11 @@
       <div class="article-info article-info-post">
         
     <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/Java/">Java</a>
+    <a class="article-category-link" href="/categories/数据结构与算法/">数据结构与算法</a>
     </div>
 
 
         
-    <div class="article-tag tagcloud">
-        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/static/">static</a></li></ul>
-    </div>
-
         <div class="clearfix"></div>
       </div>
       
@@ -304,27 +317,57 @@
     <div class="article-entry" itemprop="articleBody">
       
           
-        <p>Java中有个static关键字，想必大家都很熟悉。static字面上可以理解为“全局”或者“静态”的意思， 同时static可以用来修饰成员变量，成员方法，也可以用来修饰静态代码块，甚至可以用来修饰内部可以用来修饰静态内部类。<br><a id="more"></a></p>
-<h1 id="静态变量"><a href="#静态变量" class="headerlink" title="静态变量"></a>静态变量</h1><p>被static修饰的成员变量称为静态变量，其独立于该类的对象，或者说其附属于于该类，而不是该类的对象。静态变量被该类所有的对象实例所共享。当该类被JVM加载后，JVM就可以根据类名在方法区里面找到它们。静态变量代表不需要被实例化就可以使用，其在内存中只有一个拷贝。而实例变量则对于每一个实例对象都有一个拷贝。 </p>
-<h1 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h1><p>被static修饰的成员方法称为静态方法，可以直接通过类名调用。静态方法和静态变量其实可以有相同的理解，就是说该方法是属于类的，而不是类的实例对象的。所以静态方法中不能用this和super关键字，不能访问所属类的实例变量和实例方法（不带static修饰的成员变量和成员方法），因为这些都是与具体的对象关联的。同时，因为static方法是独立于任何实例的，所以static方法不能是abstract的，必须被实现。</p>
-<h1 id="静态代码块"><a href="#静态代码块" class="headerlink" title="静态代码块"></a>静态代码块</h1><p>被static修饰的代码块叫做静态代码块。静态代码块可以有多个，位置可以随意，其不在任何的方法体中。在JVM加载类时会按在类中的顺序执行这些静态代码块，每个静态代码块只会被执行一次。在如下代码中：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 16/12/1.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticTest</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> a;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> b;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> &#123;</div><div class="line">        StaticTest.a = <span class="number">3</span>;</div><div class="line">        System.out.println(a);</div><div class="line"></div><div class="line">        StaticTest test = <span class="keyword">new</span> StaticTest();</div><div class="line">        test.sayHello();</div><div class="line">        test.b = <span class="number">1024</span>;</div><div class="line">        System.out.println(test.b);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> &#123;</div><div class="line">        StaticTest.a = <span class="number">4</span>;</div><div class="line">        System.out.println(a);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        <span class="comment">// TODO</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> &#123;</div><div class="line">        StaticTest.a = <span class="number">5</span>;</div><div class="line">        System.out.println(a);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"Hello Bigming"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>其输出是<br>3<br>Hello Bigming<br>1024<br>4<br>5</p>
-<h1 id="内部静态类"><a href="#内部静态类" class="headerlink" title="内部静态类"></a>内部静态类</h1><p>这里指的是内部静态类！因为用static修饰class时，只能是在内部类中使用！所以没有外部静态类一说！Java中的内部类有两种，一种是静态内部类，一种是普通内部类。普通内部类中可以获得外部类的引用，能够访问外部类对象的成员变量，可以说普通内部类依赖于外部类，与外部类是共生共死的。 创建普通内部类对象之前，必须先创建外部类的对象。如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">OuterClass o = <span class="keyword">new</span> OuterClass();</div><div class="line">OuterClass.InnerClass inner = o.new InnerClass();</div><div class="line"> </div><div class="line">OuterClass.InnerClass inner = <span class="keyword">new</span> o.InnerClass();         <span class="comment">/* 错误 */</span></div><div class="line">OuterClass.InnerClass inner = <span class="keyword">new</span> OuterClass.InnerClass();  <span class="comment">/* 错误 */</span></div></pre></td></tr></table></figure></p>
-<p>而静态内部类没有外部对象的引用，无法访问外部对象的资源。但是其无需依赖于外部类，可以独立于外部对象而存在。创建静态内部类的代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">OuterClass.InnerClass inner = <span class="keyword">new</span> OuterClass.InnerClass();</div></pre></td></tr></table></figure></p>
-<p>从某种程度上可以将静态内部类与静态变量对比，其是附属于类的。而普通内部类与实例变量对比，其是附属于类的对象的。<br>静态内部类一般在如下场景中使用：</p>
+        <p>在开始介绍今天的各种树之前，有必要把一些概念说清楚。</p>
 <ol>
-<li>外部类需要使用内部类，而内部类无需使用外部类的资源</li>
-<li>内部类可以独立外部类创建对象<br>使用静态内部类可以加强代码的封装性，提高代码的可读性，如下代码：<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span></span>&#123;  </div><div class="line">     <span class="comment">//姓名  </span></div><div class="line">     <span class="keyword">private</span> String name;  </div><div class="line">     <span class="comment">//家庭  </span></div><div class="line">     <span class="keyword">private</span> Home home;  </div><div class="line">     <span class="comment">//构造函数设置属性值  </span></div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="title">Person</span><span class="params">(String _name)</span></span>&#123;  </div><div class="line">          name = _name;  </div><div class="line">     &#125;  </div><div class="line">     <span class="comment">/* home、name的getter/setter方法省略 */</span>  </div><div class="line"> </div><div class="line">     <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Home</span></span>&#123;  </div><div class="line">          <span class="comment">//家庭地址  </span></div><div class="line">          <span class="keyword">private</span> String address;  </div><div class="line">          <span class="comment">//家庭电话  </span></div><div class="line">          <span class="keyword">private</span> String tel;  </div><div class="line"> </div><div class="line">          <span class="function"><span class="keyword">public</span> <span class="title">Home</span><span class="params">(String _address,String _tel)</span></span>&#123;  </div><div class="line">            address = _address;  </div><div class="line">            tel = _tel;  </div><div class="line">          &#125;  </div><div class="line">          <span class="comment">/* address、tel的getter/setter方法省略 */</span>  </div><div class="line">     &#125;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
+<li>Binary Tree（二叉树）：二叉树的每个节点最多有两个子节点</li>
+<li>Binary Search Tree（二叉搜索树）：二叉搜索树每个节点只存储一个键值，并且左子树（如果有）所有节点的值都要小于根节点的值，右子树（如果有）所有节点的值都要大于根节点的值。</li>
+<li>B-Tree（Balanced Tree）：也就是今天要说的B-树，这里的-不是minus的意思，而是作为连接符的横杠，而我们也经常把B-树直接翻译为B树，所以B树与B-树通常是指一个概念，B代表的是Balance，而不是Binary。而B+树和B*树则是B-树的基础上正对不同场景的优化版本，将会在后文中有所介绍。</li>
 </ol>
-<p>将Home放在Person的内部，可以知道Home是Person的属性。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;    </div><div class="line">    Home home = <span class="keyword">new</span> Person.Home(<span class="string">"上海"</span>, <span class="string">"021"</span>);  </div><div class="line">    Person p1 = <span class="keyword">new</span> Person(<span class="string">"张三"</span>);    </div><div class="line">    Person p2 = <span class="keyword">new</span> Person(<span class="string">"李四"</span>);    </div><div class="line">    p1.setHome(home);    </div><div class="line">    p2.setHome(home);    </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>这里创建的Home对象是由p1和p2共享的，类似于属于Person类的静态变量。但是如果把Home类换成普通内部类的话，<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;  </div><div class="line">    Person p1 = <span class="keyword">new</span> Person(<span class="string">"张三"</span>);  </div><div class="line">    Home home = p1.new Home(<span class="string">"上海"</span>, <span class="string">"021"</span>);</div><div class="line">    p1.setHome(home);  </div><div class="line">    Person p2 = <span class="keyword">new</span> Person(<span class="string">"李四"</span>);  </div><div class="line">    p2.setHome(home);  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>这时p1和p2依然共享一个home对象，但是此时home对象是与p1共生共死的，如果p1对象消亡，那么p2就不能访问到home对象了。所以此时使用静态内部类比普通内部类要更加合适。<br>同时，普通内部类和静态内部类还有一些区别：</p>
+<a id="more"></a>
+<p>在大规模数据存储中，二叉查找树的深度会过大，当内存无法存储所有节点数据时，需要读取磁盘，进行IO操作，从而树的高度越高，I/O操作次数越多，效率也就越低。所以诸如之前所讲的<a href="http://www.bigming.me/2016/12/26/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8F%8ATreeMap%E6%BA%90%E7%A0%81%E5%AE%9E%E7%8E%B0/" target="_blank" rel="external">红黑树</a>，<a href="http://www.bigming.me/2016/12/27/%E6%B7%B1%E5%85%A5%E6%B5%85%E6%9E%90%E7%90%86%E8%A7%A3AVL%E6%A0%91[%E5%90%AB%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0]/" target="_blank" rel="external">AVL树</a> 因为树的高度太高而不适合这种需要大量IO操作的查询。所以，B树通过多叉的实现来降低树的高度，从而减少IO操作的次数。</p>
+<h1 id="B树（B-树）"><a href="#B树（B-树）" class="headerlink" title="B树（B-树）"></a>B树（B-树）</h1><p>为方便描述，下面一律用B数这个名称。B树是一种多路平衡搜索树（非二叉），若其是M路，则：</p>
 <ol>
-<li>普通内部类不能声明static的方法和变量。这里说的是变量，常量还是可以的，用final static修饰。而静态内部类和外部类一样，没有任何限制。</li>
-<li>使用静态内部类，多个外部类的对象可以共享一个内部类的对象。而使用普通内部类，每个外部类的对象都有自己的内部类对象，外部类对象之间不能共享内部类的对象。</li>
+<li>任意非叶子节点最多可以有M个子女，且M&gt;2；</li>
+<li>根节点的子女数为[2,M]；</li>
+<li>除了根节点以外的非叶子节点的子女数目为M/2（取上整）个到M个；</li>
+<li>每个节点存放至少M/2-1（取上整）和至多M-1个键值（至少两个）；</li>
+<li>非叶子节点的关键字个数=指向子女的指针个数-1；</li>
+<li>非叶子节点的关键字K[1],K[2],…,K[M-1]且有K[i]&lt;K[i+1]；</li>
+<li>非叶子节点的指针P[1],P[2],…,P[M]；其中P[1]指向关键字小于K[1]的子树，P[M]指向关键字大于K[M-1]的子树，其他P[i]指向关键字属于(K[i-1],K[i])的子树；</li>
+<li>所有叶子节点都位于同一层。</li>
 </ol>
-<p>以上就是全部总结啦~</p>
+<p>B树与二叉搜索树的最大区别在于其每个节点可以存不止一个键值，并且其子女不止两个，不过还是需要满足键值数=子女数-1。因此，对于相同数量的键值，B树比二叉搜索树要更加矮一些，特别是当M较大时，树高会更低。</p>
+<p><img src="http://oe0nilvpj.bkt.clouddn.com/B-Tree.png" alt="B-Tree"><br>上图中是一个简单的B树，在实际应用中，M可以取到很大，比如大于1000。一般情况下M的取值会使得每个磁盘盘块可以正好存放一个B数节点。上图中的35节点，35是一个key（或者说是索引，比如磁盘文件的文件名），而小黑块则代表的是该key所指向的内容在磁盘中实际的存储位置，是一个指针（比如35这个文件在硬盘中的位置）。</p>
+<h2 id="B树的搜索"><a href="#B树的搜索" class="headerlink" title="B树的搜索"></a>B树的搜索</h2><p>B树的搜索与二叉搜索树类似，只不过需要在节点内部进行一次搜索查找。从根结点开始，对结点内的关键字（有序）序列进行二分查找，如果命中则结束，否则进入查询关键字所属范围的儿子结点；重复，直到所对应的儿子指针为空，或已经是叶子结点；</p>
+<h2 id="B树的插入"><a href="#B树的插入" class="headerlink" title="B树的插入"></a>B树的插入</h2><p>B树的插入首先查找插入所在的节点，若该节点未满，插入即可，若该节点以及满了，则需要将该节点分裂，并将该节点的中间的元素移动到父节点上，若父节点未满，则结束，若父节点也满了，则需要继续分裂父节点，如此不断向上，直到根节点，如果根节点也满了，则分裂根节点，从而树的高度+1。</p>
+<p>下面是B树插入的一个演示动画，往B树中一次插入的元素为6 10 4 14 5 11 15 3 2 12 1 7 8 8 6 3 6 21 5 15 15 6 32 23 45 65 7 8 6 5 4。<br><img src="http://oe0nilvpj.bkt.clouddn.com/B-Tree.gif" alt="B-Tree Build"></p>
+<h2 id="B树的删除"><a href="#B树的删除" class="headerlink" title="B树的删除"></a>B树的删除</h2><p>B树的删除首先要找到删除的节点，并删除节点中的元素，如果删除的元素有左右孩子，则上移左孩子最右节点或右孩子最左节点到父节点，若没有左右孩子，则直接删除。删除后，若某节点中元素数目不符合B树要求（小于M/2-1取上整），则需要看起相邻的兄弟节点是否有多余的元素，若有，则可以向父节点借一个元素，然后将最丰满的相邻兄弟结点中上移最后或最前一个元素到父节点中（有点类似于左旋）。若其相邻兄弟节点没有多余的元素，则与其兄弟节点合并成一个节点，此时也需要将父节点中的一个元素一起合并。</p>
+<p>关于B树插入和删除操作更详细的图解大家可以参考<a href="http://blog.csdn.net/v_JULY_v/article/details/6530142/" target="_blank" rel="external">这篇文章</a></p>
+<h1 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h1><p><img src="http://oe0nilvpj.bkt.clouddn.com/B+Tree.png" alt="B+Tree"><br>B+树是B树的一个变种，其也是一种多路平衡搜索树，其与B树的主要区别是：</p>
+<ol>
+<li>非叶子节点的指针数量与关键字数量相等；</li>
+<li>非叶子节点的子树指针P[i]，指向关键字值属于[K[i],K[i+1]）的子树（B树是开区间，B+树是左闭右开，也就是说B树不允许关键字重复，而B+树允许）；</li>
+<li>所有关键字都在叶子节点出现，所有的叶子节点增加了一个链指针（稠密索引，且链表中的关键字切好是有序的）； </li>
+<li>非叶子节点相当于是叶子节点的索引（稀疏索引），叶子节点相当于是存储数据的数据层。</li>
+</ol>
+<p>B+树主要是应文件系统所需而产生的。文件系统中，文件的目录是一级一级索引，只有最底层的叶子节点（文件）保存数据。非叶子节点只保存索引，不保存实际的数据，数据都保存在叶子节点中，所有的非叶子节点都可以看成是索引部分。</p>
+<p>非叶子节点（比如[5，28，65]）只是一个key（索引，实际的数据在叶子节点上，对应于叶子节点[5,8,9]中的5，[28,30,33]中的28，[65,73,79]中的65才是真正的数据或指向真实数据的指针）。</p>
+<h2 id="B-树的搜索"><a href="#B-树的搜索" class="headerlink" title="B+树的搜索"></a>B+树的搜索</h2><p>B+的搜索与B树也是基本相同的。唯一的区别是B+树只有达到叶子结点才命中，因为只有叶节点中存放着真实数据或真实数据的指正，而B树可以在非叶子结点命中，其性能也等价于在元素全集做一次二分查找。</p>
+<h2 id="B-树的插入"><a href="#B-树的插入" class="headerlink" title="B+树的插入"></a>B+树的插入</h2><p>B+树的插入与B树类似，如果节点中有多余的空间放入元素，则直接插入即可。如果节点本来就已经满了，则将其分裂为两个节点，并将其中间元素的索引放入到父节点中，在这里如果是叶子节点的话，是拷贝中间元素的索引到父节点中（因为叶子节点需要包含所有的元素），而如果是非叶子节点，则是上移节点的中间元素到父节点中。</p>
+<p>下面是B+树插入的一个演示动画：<br><img src="http://oe0nilvpj.bkt.clouddn.com/B+Tree.gif" alt="B+Tree Insert"></p>
+<h2 id="B-树的删除"><a href="#B-树的删除" class="headerlink" title="B+树的删除"></a>B+树的删除</h2><p>在叶节点中删除元素，如果节点还满足B+树的要求，则okay。如果元素个数过少，并且其邻近兄弟节点有多余的元素，则从邻近兄弟节点中借一个元素，并修改父节点中的索引使其满足新的划分。如果其邻近兄弟节点也没有多余的元素，则将其和邻近兄弟节点合并，并且我们需要修改其父节点的索引以满足新的划分。并且如果父节点的索引元素太少不满足要求，则需要继续看起兄弟节点是否多余，如果没有多余则还需要与兄弟节点合并，如此不断向上，直到根节点。如果根节点中元素也被删除，则把根节点删除，并由合并来的节点作为新的根节点，树的高度减1。</p>
+<p>关于B+树的插入和删除操作可以看<a href="http://www.cburch.com/cs/340/reading/btree/" target="_blank" rel="external">这篇文章</a>，里面有更详细的图解。</p>
+<h2 id="B-树与B树的比较"><a href="#B-树与B树的比较" class="headerlink" title="B+树与B树的比较"></a>B+树与B树的比较</h2><p>B+树的非叶子节点并没有指向关键字具体信息的指针，因此其内部节点相对B树更小，如果把所有同一内部节点的关键字存放在同一盘块中，盘块所能容纳的关键字数量也越多，具有更好的空间局部性，一次性读入内存的需要查找的关键字也越多，相对的IO读写次数也就降低了。</p>
+<p>另外对于B+树来说，因为非叶子节点只是叶子节点中关键字的索引，所以任何关键字的查找都必须走一条从根节点到叶子节点的路，所有关键字查询的路径长度相同。而若经常访问的元素离根节点很近，则B树访问更迅速，因为其不一定要到叶子节点。</p>
+<p>数据库索引采用B+树的主要原因是B树在提高了IO性能的同时并没有解决元素遍历效率低下的问题，而也正是为了解决该问题，B+树应运而生。因为叶子节点中增加了一个链指针，B+树只需要取遍历叶子节点可以实现整棵树的遍历。而且数据库中基于范围的查询是非常频繁的，B树对基于范围的查询效率太低。</p>
+<h1 id="B-树-1"><a href="#B-树-1" class="headerlink" title="B*树"></a>B*树</h1><p>B*树又是B+树的变种，其与B+树的区别有：</p>
+<ol>
+<li>B*树在B+树的非根和非叶子节点再增加指向兄弟节点的指针</li>
+<li>B*树规定非叶子节点的键值个数至少为(2/3)*M，这样每个节点的使用率就从B+树的1/2上升到2/3，所以空间使用率更高。</li>
+</ol>
+<p>B*树的分裂：当一个结点满时，如果它的下一个兄弟结点未满，那么将一部分数据移到兄弟结点中，再在原结点插入关键字，最后修改父结点中兄弟结点的关键字（因为兄弟结点的关键字范围改变了）；如果兄弟也满了，则在原结点与兄弟结点之间增加新结点，并各复制1/3的数据到新结点，最后在父结点增加新结点的指针；B*树分配新结点的概率比B+树要低，空间使用率更高；</p>
+<p>关于B*树的搜索，插入和删除操作其思想和B+树是类似的，这里不再详细说明，有兴趣的童鞋可以自己画一画图。</p>
+<h1 id="参考："><a href="#参考：" class="headerlink" title="参考："></a>参考：</h1><p><a href="http://www.itwendao.com/article/detail/2018.html" target="_blank" rel="external">http://www.itwendao.com/article/detail/2018.html</a><br><a href="http://www.cburch.com/cs/340/reading/btree/" target="_blank" rel="external">http://www.cburch.com/cs/340/reading/btree/</a><br><a href="http://www.10tiao.com/html/687/201608/2247483906/1.html" target="_blank" rel="external">http://www.10tiao.com/html/687/201608/2247483906/1.html</a><br><a href="http://www.doc00.com/doc/1001006sj" target="_blank" rel="external">http://www.doc00.com/doc/1001006sj</a><br><a href="https://my.oschina.net/surya/blog/16449" target="_blank" rel="external">https://my.oschina.net/surya/blog/16449</a><br><a href="http://www.cnblogs.com/vincently/p/4526560.html" target="_blank" rel="external">http://www.cnblogs.com/vincently/p/4526560.html</a><br><a href="http://blog.csdn.net/v_JULY_v/article/details/6530142/" target="_blank" rel="external">http://blog.csdn.net/v_JULY_v/article/details/6530142/</a></p>
 
       
     </div>
@@ -333,13 +376,13 @@
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></p>
+        <p><span>本文标题:</span><a href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
-        <p><span>发布时间:</span>2016-12-01, 12:22:23</p>
-        <p><span>最后更新:</span>2016-12-07, 19:12:51</p>
+        <p><span>发布时间:</span>2016-12-28, 19:58:20</p>
+        <p><span>最后更新:</span>2016-12-28, 22:27:29</p>
         <p>
-            <span>原始链接:</span><a class="post-url" href="/2016/12/01/说说Java中的静态内部类/" title="说说Java中的静态内部类">http://bigmingtalk.github.io/2016/12/01/说说Java中的静态内部类/</a>
-            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/01/说说Java中的静态内部类/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <span>原始链接:</span><a class="post-url" href="/2016/12/28/说说B-树，B-树，B-树/" title="说说B-树，B+树，B*树">http://bigmingtalk.github.io/2016/12/28/说说B-树，B-树，B-树/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/28/说说B-树，B-树，B-树/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
         </p>
         <p>
@@ -351,16 +394,10 @@
 
     <nav id="article-nav">
         
-            <div id="article-nav-newer" class="article-nav-title">
-                <a href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">
-                    谈谈Java的native关键字以及JNI调用和实现
-                </a>
-            </div>
-        
         
             <div id="article-nav-older" class="article-nav-title">
-                <a href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">
-                    Java传值还是传引用？读完这篇文章你就懂了！
+                <a href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">
+                    深入浅析理解AVL树[含代码实现]
                 </a>
             </div>
         
@@ -372,7 +409,7 @@
     <div id="toc" class="toc-article">
         <strong class="toc-title">文章目录</strong>
         
-            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#静态变量"><span class="toc-number">1.</span> <span class="toc-text">静态变量</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#静态方法"><span class="toc-number">2.</span> <span class="toc-text">静态方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#静态代码块"><span class="toc-number">3.</span> <span class="toc-text">静态代码块</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#内部静态类"><span class="toc-number">4.</span> <span class="toc-text">内部静态类</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#B树（B-树）"><span class="toc-number">1.</span> <span class="toc-text">B树（B-树）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#B树的搜索"><span class="toc-number">1.1.</span> <span class="toc-text">B树的搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B树的插入"><span class="toc-number">1.2.</span> <span class="toc-text">B树的插入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B树的删除"><span class="toc-number">1.3.</span> <span class="toc-text">B树的删除</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#B-树"><span class="toc-number">2.</span> <span class="toc-text">B+树</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#B-树的搜索"><span class="toc-number">2.1.</span> <span class="toc-text">B+树的搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B-树的插入"><span class="toc-number">2.2.</span> <span class="toc-text">B+树的插入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B-树的删除"><span class="toc-number">2.3.</span> <span class="toc-text">B+树的删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B-树与B树的比较"><span class="toc-number">2.4.</span> <span class="toc-text">B+树与B树的比较</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#B-树-1"><span class="toc-number">3.</span> <span class="toc-text">B*树</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考："><span class="toc-number">4.</span> <span class="toc-text">参考：</span></a></li></ol>
         
     </div>
     <style>
@@ -408,7 +445,7 @@
         </div>
         <script>
             window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"说说Java中的静态内部类　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+                "common":{"bdSnsKey":{},"bdText":"说说B-树，B+树，B*树　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
         </script>
     
 
@@ -426,7 +463,7 @@
     
       <div class="duoshuo" id="comments">
     <div id="comment-box" ></div>
-    <div class="ds-thread" id="ds-thread" data-thread-key="2016/12/01/说说Java中的静态内部类/" data-title="说说Java中的静态内部类" data-url="http://bigmingtalk.github.io/2016/12/01/说说Java中的静态内部类/"></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2016/12/28/说说B-树，B-树，B-树/" data-title="说说B-树，B+树，B*树" data-url="http://bigmingtalk.github.io/2016/12/28/说说B-树，B-树，B-树/"></div>
     <script>
         var duoshuoQuery = {short_name:"bigming"};
         var loadComment = function(){
@@ -449,15 +486,13 @@
 
     <div class="scroll" id="post-nav-button">
         
-            <a href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/" title="上一篇: 谈谈Java的native关键字以及JNI调用和实现">
-                <i class="fa fa-angle-left"></i>
-            </a>
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
         
 
         <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
 
         
-            <a href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/" title="下一篇: Java传值还是传引用？读完这篇文章你就懂了！">
+            <a href="/2016/12/27/深入浅析理解AVL树[含代码实现]/" title="下一篇: 深入浅析理解AVL树[含代码实现]">
                 <i class="fa fa-angle-right"></i>
             </a>
         

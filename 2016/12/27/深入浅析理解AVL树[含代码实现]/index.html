@@ -18,15 +18,15 @@
 <meta name="description" content="之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…
 AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最">
 <meta property="og:type" content="article">
-<meta property="og:title" content="深入浅析理解AVL树(含代码实现)">
-<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/index.html">
+<meta property="og:title" content="深入浅析理解AVL树[含代码实现]">
+<meta property="og:url" content="http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树[含代码实现]/index.html">
 <meta property="og:site_name" content="Bigming">
 <meta property="og:description" content="之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…
 AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最">
 <meta property="og:image" content="http://oe0nilvpj.bkt.clouddn.com/Tree_Rebalancing.png">
-<meta property="og:updated_time" content="2016-12-27T13:51:57.000Z">
+<meta property="og:updated_time" content="2016-12-28T14:26:55.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="深入浅析理解AVL树(含代码实现)">
+<meta name="twitter:title" content="深入浅析理解AVL树[含代码实现]">
 <meta name="twitter:description" content="之前大一还是大二的时候学过AVL树，那时候觉得AVL树好难啊，虽然应付了考试，但是考试过后那是忘得一干二净。以至于后来有一次别人说起AVL树的时候都想歪歪了，什么时候岛国的妹子都还需要用一棵树来排个序…现在想想实在罪过…
 AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡二叉树，同时也是最先发明的自平衡二叉树。在AVL树中任何节点的两棵子树的高度最大差别为1。其查找，插入，删除在平均和最">
 <meta name="twitter:image" content="http://oe0nilvpj.bkt.clouddn.com/Tree_Rebalancing.png">
@@ -61,7 +61,7 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>深入浅析理解AVL树(含代码实现) | Bigming</title>
+<title>深入浅析理解AVL树[含代码实现] | Bigming</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -265,10 +265,10 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
-      <div class="body-wrap"><article id="post-深入浅析理解AVL树(含代码实现)" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-深入浅析理解AVL树[含代码实现]" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/12/27/深入浅析理解AVL树(含代码实现)/" class="article-date">
+      <a href="/2016/12/27/深入浅析理解AVL树[含代码实现]/" class="article-date">
       <time datetime="2016-12-27T11:58:44.000Z" itemprop="datePublished">2016-12-27</time>
 </a>
 
@@ -284,7 +284,7 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
         
   
     <h1 class="article-title" itemprop="name">
-      深入浅析理解AVL树(含代码实现)
+      深入浅析理解AVL树[含代码实现]
     </h1>
   
 
@@ -350,13 +350,13 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/2016/12/27/深入浅析理解AVL树(含代码实现)/">深入浅析理解AVL树(含代码实现)</a></p>
+        <p><span>本文标题:</span><a href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
         <p><span>发布时间:</span>2016-12-27, 19:58:44</p>
-        <p><span>最后更新:</span>2016-12-27, 21:51:57</p>
+        <p><span>最后更新:</span>2016-12-28, 22:26:55</p>
         <p>
-            <span>原始链接:</span><a class="post-url" href="/2016/12/27/深入浅析理解AVL树(含代码实现)/" title="深入浅析理解AVL树(含代码实现)">http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/</a>
-            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <span>原始链接:</span><a class="post-url" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/" title="深入浅析理解AVL树[含代码实现]">http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树[含代码实现]/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树[含代码实现]/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
         </p>
         <p>
@@ -367,6 +367,12 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
 
 
     <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/2016/12/28/说说B-树，B-树，B-树/">
+                    说说B-树，B+树，B*树
+                </a>
+            </div>
         
         
             <div id="article-nav-older" class="article-nav-title">
@@ -419,7 +425,7 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
         </div>
         <script>
             window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"深入浅析理解AVL树(含代码实现)　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+                "common":{"bdSnsKey":{},"bdText":"深入浅析理解AVL树[含代码实现]　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
         </script>
     
 
@@ -437,7 +443,7 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
     
       <div class="duoshuo" id="comments">
     <div id="comment-box" ></div>
-    <div class="ds-thread" id="ds-thread" data-thread-key="2016/12/27/深入浅析理解AVL树(含代码实现)/" data-title="深入浅析理解AVL树(含代码实现)" data-url="http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树(含代码实现)/"></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2016/12/27/深入浅析理解AVL树[含代码实现]/" data-title="深入浅析理解AVL树[含代码实现]" data-url="http://bigmingtalk.github.io/2016/12/27/深入浅析理解AVL树[含代码实现]/"></div>
     <script>
         var duoshuoQuery = {short_name:"bigming"};
         var loadComment = function(){
@@ -460,7 +466,9 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
 
     <div class="scroll" id="post-nav-button">
         
-            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+            <a href="/2016/12/28/说说B-树，B-树，B-树/" title="上一篇: 说说B-树，B+树，B*树">
+                <i class="fa fa-angle-left"></i>
+            </a>
         
 
         <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
@@ -472,7 +480,7 @@ AVL概念介绍与之前介绍的红黑树一样，AVL数也是一棵自平衡�
         
     </div>
 
-    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树(含代码实现)/">深入浅析理解AVL树(含代码实现)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列（例子，技巧与使用场景）/">深入浅出数据结构之栈与队列（例子，技巧与使用场景）</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
 
 
 
