@@ -15,19 +15,16 @@
 
 
 
-<meta name="description" content="结论：Java中private方法不能被重写！
-为什么呢？请思考30秒，看看你的Java基本功怎么样…">
+<meta name="description" content="斐波那契额数列是面试中常见的一种考题，求解斐波那契数列也有很多种方法，可以用递归，迭代等不同的方法来解答。本文分别用递归，迭代以及矩阵相乘（二分相乘）的方法来求解，其复杂度分别为O(2^n), O(n)以及O(logn)。具体见如下代码所示：">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java中private方法能重写吗？">
-<meta property="og:url" content="http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/index.html">
+<meta property="og:title" content="Fibonacci数列的O(logn)解法">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/02/09/Fibonacci数列的O-logn-解法/index.html">
 <meta property="og:site_name" content="Bigming">
-<meta property="og:description" content="结论：Java中private方法不能被重写！
-为什么呢？请思考30秒，看看你的Java基本功怎么样…">
-<meta property="og:updated_time" content="2016-12-07T10:23:56.000Z">
+<meta property="og:description" content="斐波那契额数列是面试中常见的一种考题，求解斐波那契数列也有很多种方法，可以用递归，迭代等不同的方法来解答。本文分别用递归，迭代以及矩阵相乘（二分相乘）的方法来求解，其复杂度分别为O(2^n), O(n)以及O(logn)。具体见如下代码所示：">
+<meta property="og:updated_time" content="2017-02-09T06:40:37.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java中private方法能重写吗？">
-<meta name="twitter:description" content="结论：Java中private方法不能被重写！
-为什么呢？请思考30秒，看看你的Java基本功怎么样…">
+<meta name="twitter:title" content="Fibonacci数列的O(logn)解法">
+<meta name="twitter:description" content="斐波那契额数列是面试中常见的一种考题，求解斐波那契数列也有很多种方法，可以用递归，迭代等不同的方法来解答。本文分别用递归，迭代以及矩阵相乘（二分相乘）的方法来求解，其复杂度分别为O(2^n), O(n)以及O(logn)。具体见如下代码所示：">
 
 <link rel="apple-touch-icon" href= "/apple-touch-icon.png">
 
@@ -59,7 +56,7 @@
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>Java中private方法能重写吗？ | Bigming</title>
+<title>Fibonacci数列的O(logn)解法 | Bigming</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -263,11 +260,11 @@
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
 </nav>
-      <div class="body-wrap"><article id="post-Java中private方法能重写吗？" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-Fibonacci数列的O-logn-解法" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/10/04/Java中private方法能重写吗？/" class="article-date">
-      <time datetime="2016-10-04T14:39:29.000Z" itemprop="datePublished">2016-10-04</time>
+      <a href="/2017/02/09/Fibonacci数列的O-logn-解法/" class="article-date">
+      <time datetime="2017-02-09T06:10:52.000Z" itemprop="datePublished">2017-02-09</time>
 </a>
 
 
@@ -282,7 +279,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Java中private方法能重写吗？
+      Fibonacci数列的O(logn)解法
     </h1>
   
 
@@ -291,13 +288,13 @@
       <div class="article-info article-info-post">
         
     <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/Java/">Java</a>
+    <a class="article-category-link" href="/categories/数据结构与算法/">数据结构与算法</a>
     </div>
 
 
         
     <div class="article-tag tagcloud">
-        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/private方法/">private方法</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/重写/">重写</a></li></ul>
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li></ul>
     </div>
 
         <div class="clearfix"></div>
@@ -307,14 +304,9 @@
     <div class="article-entry" itemprop="articleBody">
       
           
-        <p>结论：Java中private方法不能被重写！</p>
-<p>为什么呢？请思考30秒，看看你的Java基本功怎么样…</p>
+        <p>斐波那契额数列是面试中常见的一种考题，求解斐波那契数列也有很多种方法，可以用递归，迭代等不同的方法来解答。本文分别用递归，迭代以及矩阵相乘（二分相乘）的方法来求解，其复杂度分别为O(2^n), O(n)以及O(logn)。具体见如下代码所示：</p>
 <a id="more"></a>
-<p>原因：private方法默认是final的，而final方法是不能被继承的。说起来好像挺简单，但是用起来好像又会傻傻分不清楚。比如下面这个小程序，想一想它的输出是什么？<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"A"</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        A a = <span class="keyword">new</span> B();</div><div class="line">        a.print();</div><div class="line">        B b = <span class="keyword">new</span> B();</div><div class="line">        b.print();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"B"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>正确输出是:<br>A<br>B</p>
-<p>对于第二个输出“B”应该没有任何疑问，这里主要的疑问是a.print()为什么会输出“A”？在上面的程序中，Class B的print()方法相当于是B添加的方法，不属于重写！同时，这里采用的是静态绑定，而不是动态绑定！在Java中，private方法、static方法、final方法或者构造器均采用静态绑定，而静态绑定在调用方法时不依赖于隐式参数的实际类型！所以a.print()调用的是Class A的print()方法！</p>
-<p>其实，这只是一个演示的demo程序，在现实的编程中，我们应该尽量避免使用有歧义的同名函数，特别是像上述demo中的情况。良好的命名习惯可以使我们在实际的编程中少走很多弯路。</p>
-
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> Algorithm;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 17/2/9.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Fabonacci</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">Fibonacci_Solution1</span><span class="params">(<span class="keyword">int</span> n)</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">long</span>[] result = <span class="keyword">new</span> <span class="keyword">long</span>[]&#123;<span class="number">0</span>, <span class="number">1</span>&#125;;</div><div class="line">        <span class="keyword">if</span>(n &lt; <span class="number">2</span>)</div><div class="line">            <span class="keyword">return</span> result[n];</div><div class="line">        <span class="keyword">return</span> Fibonacci_Solution1(n - <span class="number">1</span>) + Fibonacci_Solution1(n - <span class="number">2</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">Fibonacci_Solution2</span><span class="params">(<span class="keyword">int</span> n)</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">int</span>[] result = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">0</span>, <span class="number">1</span>&#125;;</div><div class="line">        <span class="keyword">if</span>(n &lt; <span class="number">2</span>)</div><div class="line">            <span class="keyword">return</span> result[n];</div><div class="line"></div><div class="line">        <span class="keyword">long</span>  first = <span class="number">0</span>;</div><div class="line">        <span class="keyword">long</span>  second = <span class="number">1</span>;</div><div class="line">        <span class="keyword">long</span>  third = <span class="number">0</span>;</div><div class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n; ++ i)</div><div class="line">        &#123;</div><div class="line">            third = first + second;</div><div class="line">            first = second;</div><div class="line">            second = third;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> third;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="keyword">long</span>[][] matrixMultiply2By2(<span class="keyword">long</span>[][] matrix1, <span class="keyword">long</span>[][] matrix2) &#123;</div><div class="line">        <span class="keyword">if</span> (matrix1 == <span class="keyword">null</span> || matrix2 == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (matrix1.length != <span class="number">2</span> || matrix1[<span class="number">0</span>].length != <span class="number">2</span> ||</div><div class="line">                matrix2.length != <span class="number">2</span> || matrix2[<span class="number">0</span>].length != <span class="number">2</span>) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">long</span>[][] result = <span class="keyword">new</span> <span class="keyword">long</span>[<span class="number">2</span>][<span class="number">2</span>];</div><div class="line">        result[<span class="number">0</span>][<span class="number">0</span>] = matrix1[<span class="number">0</span>][<span class="number">0</span>] * matrix2[<span class="number">0</span>][<span class="number">0</span>] + matrix1[<span class="number">0</span>][<span class="number">1</span>] * matrix2[<span class="number">1</span>][<span class="number">0</span>];</div><div class="line">        result[<span class="number">0</span>][<span class="number">1</span>] = matrix1[<span class="number">0</span>][<span class="number">0</span>] * matrix2[<span class="number">0</span>][<span class="number">1</span>] + matrix1[<span class="number">0</span>][<span class="number">1</span>] * matrix2[<span class="number">1</span>][<span class="number">1</span>];</div><div class="line">        result[<span class="number">1</span>][<span class="number">0</span>] = matrix1[<span class="number">1</span>][<span class="number">0</span>] * matrix2[<span class="number">0</span>][<span class="number">0</span>] + matrix1[<span class="number">1</span>][<span class="number">1</span>] * matrix2[<span class="number">0</span>][<span class="number">1</span>];</div><div class="line">        result[<span class="number">1</span>][<span class="number">1</span>] = matrix1[<span class="number">1</span>][<span class="number">0</span>] * matrix2[<span class="number">0</span>][<span class="number">1</span>] + matrix1[<span class="number">1</span>][<span class="number">1</span>] * matrix2[<span class="number">1</span>][<span class="number">1</span>];</div><div class="line">        <span class="keyword">return</span> result;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="keyword">long</span>[][] matrixPower(<span class="keyword">int</span> n)</div><div class="line">    &#123;</div><div class="line">        <span class="keyword">assert</span>(n &gt; <span class="number">0</span>);</div><div class="line">        <span class="keyword">long</span>[][] matrix = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">if</span>(n == <span class="number">1</span>) &#123;</div><div class="line">            matrix = <span class="keyword">new</span> <span class="keyword">long</span>[][]&#123;&#123;<span class="number">1</span>, <span class="number">1</span>&#125;,  &#123;<span class="number">1</span>, <span class="number">0</span>&#125;&#125;;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(n % <span class="number">2</span> == <span class="number">0</span>)</div><div class="line">        &#123;</div><div class="line">            matrix = matrixPower(n / <span class="number">2</span>);</div><div class="line">            matrix = matrixMultiply2By2(matrix, matrix);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(n % <span class="number">2</span> == <span class="number">1</span>)</div><div class="line">        &#123;</div><div class="line">            matrix = matrixPower((n - <span class="number">1</span>) / <span class="number">2</span>);</div><div class="line">            matrix = matrixMultiply2By2(matrix, matrix);</div><div class="line">            matrix = matrixMultiply2By2(matrix, <span class="keyword">new</span> <span class="keyword">long</span>[][]&#123;&#123;<span class="number">1</span>, <span class="number">1</span>&#125;, &#123;<span class="number">1</span>, <span class="number">0</span>&#125;&#125;);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> matrix;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">long</span> <span class="title">Fibonacci_Solution3</span><span class="params">(<span class="keyword">int</span> n)</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">int</span>[] result = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">0</span>, <span class="number">1</span>&#125;;</div><div class="line">        <span class="keyword">if</span>(n &lt; <span class="number">2</span>)</div><div class="line">            <span class="keyword">return</span> result[n];</div><div class="line"></div><div class="line">        <span class="keyword">long</span>[][] powerNMinus2 = matrixPower(n - <span class="number">1</span>);</div><div class="line">        <span class="keyword">return</span> powerNMinus2[<span class="number">0</span>][<span class="number">0</span>];</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        System.out.println(Fabonacci.Fibonacci_Solution1(<span class="number">13</span>));</div><div class="line">        System.out.println(Fabonacci.Fibonacci_Solution2(<span class="number">13</span>));</div><div class="line">        System.out.println(Fabonacci.Fibonacci_Solution3(<span class="number">13</span>));</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
       
     </div>
     
@@ -322,13 +314,13 @@
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></p>
+        <p><span>本文标题:</span><a href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
-        <p><span>发布时间:</span>2016-10-04, 22:39:29</p>
-        <p><span>最后更新:</span>2016-12-07, 18:23:56</p>
+        <p><span>发布时间:</span>2017-02-09, 14:10:52</p>
+        <p><span>最后更新:</span>2017-02-09, 14:40:37</p>
         <p>
-            <span>原始链接:</span><a class="post-url" href="/2016/10/04/Java中private方法能重写吗？/" title="Java中private方法能重写吗？">http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/</a>
-            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <span>原始链接:</span><a class="post-url" href="/2017/02/09/Fibonacci数列的O-logn-解法/" title="Fibonacci数列的O(logn)解法">http://bigmingtalk.github.io/2017/02/09/Fibonacci数列的O-logn-解法/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/02/09/Fibonacci数列的O-logn-解法/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
         </p>
         <p>
@@ -340,16 +332,10 @@
 
     <nav id="article-nav">
         
-            <div id="article-nav-newer" class="article-nav-title">
-                <a href="/2016/10/09/Java中的字符编码，代码点与代码单元/">
-                    Java中的字符编码，代码点与代码单元
-                </a>
-            </div>
-        
         
             <div id="article-nav-older" class="article-nav-title">
-                <a href="/2016/09/21/有的没的，写下来的才是你的/">
-                    有的没的，写下来的才是你的
+                <a href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">
+                    Java容器（Java Collection Framework）总览
                 </a>
             </div>
         
@@ -397,7 +383,7 @@
         </div>
         <script>
             window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"Java中private方法能重写吗？　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+                "common":{"bdSnsKey":{},"bdText":"Fibonacci数列的O(logn)解法　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
         </script>
     
 
@@ -415,7 +401,7 @@
     
       <div class="duoshuo" id="comments">
     <div id="comment-box" ></div>
-    <div class="ds-thread" id="ds-thread" data-thread-key="2016/10/04/Java中private方法能重写吗？/" data-title="Java中private方法能重写吗？" data-url="http://bigmingtalk.github.io/2016/10/04/Java中private方法能重写吗？/"></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/02/09/Fibonacci数列的O-logn-解法/" data-title="Fibonacci数列的O(logn)解法" data-url="http://bigmingtalk.github.io/2017/02/09/Fibonacci数列的O-logn-解法/"></div>
     <script>
         var duoshuoQuery = {short_name:"bigming"};
         var loadComment = function(){
@@ -438,15 +424,13 @@
 
     <div class="scroll" id="post-nav-button">
         
-            <a href="/2016/10/09/Java中的字符编码，代码点与代码单元/" title="上一篇: Java中的字符编码，代码点与代码单元">
-                <i class="fa fa-angle-left"></i>
-            </a>
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
         
 
         <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
 
         
-            <a href="/2016/09/21/有的没的，写下来的才是你的/" title="下一篇: 有的没的，写下来的才是你的">
+            <a href="/2017/01/04/Java容器（Java-Collection-Framework）总览/" title="下一篇: Java容器（Java Collection Framework）总览">
                 <i class="fa fa-angle-right"></i>
             </a>
         
