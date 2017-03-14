@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="计算机系统是有硬件和软件组成的，所有计算机系统都有相似的硬件和软件组件。对于程序员来说，深入了解这些组件如何工作，以及这些组件是如何影响程序的正确性和性能的，是非常重要的一项技能。本篇文章将结合下面这段hello.c的源码，让你系统概括地了解当你在执行hello程序时，系统究竟发生了什么。hello.c的源码如下：12345#include &amp;lt;stdio.h&amp;gt;int main()&amp;#1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="程序员角度看计算机系统">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/03/14/程序员角度看计算机系统/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="计算机系统是有硬件和软件组成的，所有计算机系统都有相似的硬件和软件组件。对于程序员来说，深入了解这些组件如何工作，以及这些组件是如何影响程序的正确性和性能的，是非常重要的一项技能。本篇文章将结合下面这段hello.c的源码，让你系统概括地了解当你在执行hello程序时，系统究竟发生了什么。hello.c的源码如下：12345#include &amp;lt;stdio.h&amp;gt;int main()&amp;#1">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/compile.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/shell.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/systen_hardware.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/storage_level.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/system_level.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/abstract1.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/contex.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/address.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/multi_core.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/core_i7.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/abstract2.png">
+<meta property="og:updated_time" content="2017-03-14T06:37:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="程序员角度看计算机系统">
+<meta name="twitter:description" content="计算机系统是有硬件和软件组成的，所有计算机系统都有相似的硬件和软件组件。对于程序员来说，深入了解这些组件如何工作，以及这些组件是如何影响程序的正确性和性能的，是非常重要的一项技能。本篇文章将结合下面这段hello.c的源码，让你系统概括地了解当你在执行hello程序时，系统究竟发生了什么。hello.c的源码如下：12345#include &amp;lt;stdio.h&amp;gt;int main()&amp;#1">
+<meta name="twitter:image" content="http://oe0mec5i6.bkt.clouddn.com/compile.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>程序员角度看计算机系统 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B*树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B+树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B-树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B树/">B树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JCF/">JCF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/容器/">容器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/索引/">索引</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-程序员角度看计算机系统" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/03/14/程序员角度看计算机系统/" class="article-date">
+      <time datetime="2017-03-14T04:06:11.000Z" itemprop="datePublished">2017-03-14</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      程序员角度看计算机系统
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/计算机系统/">计算机系统</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/进程/">进程</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>计算机系统是有硬件和软件组成的，所有计算机系统都有相似的硬件和软件组件。对于程序员来说，深入了解这些组件如何工作，以及这些组件是如何影响程序的正确性和性能的，是非常重要的一项技能。本篇文章将结合下面这段hello.c的源码，让你系统概括地了解当你在执行hello程序时，系统究竟发生了什么。hello.c的源码如下：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"Hello Bigming\n"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<h1 id="信息就是位-上下文"><a href="#信息就是位-上下文" class="headerlink" title="信息就是位+上下文"></a>信息就是位+上下文</h1><p>当我用编辑器编辑了hello.c的文本文件时，源程序实际上就是由值为0和1组成的位序列。一个字节为8位。</p>
+<p>ASCII码：用一个字节大小的整数值来表示每个字符。如hello.c中开头的#对应的整数值为35，而include中的i对应的整数位105，等等。当然，由于ASCII码表示的字符有限，后来发展出了Unicode标准，以及对应的UTF-8，UTF-16等编码，具体可以查看我的另一篇<a href="http://www.bigming.me/2016/10/09/Java%E4%B8%AD%E7%9A%84%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81%EF%BC%8C%E4%BB%A3%E7%A0%81%E7%82%B9%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%8D%95%E5%85%83/" target="_blank" rel="external">博客</a>。</p>
+<p>文本文件：基于字符编码的文件，常见的编码有ASCII编码，UNICODE编码等。</p>
+<p>二进制文件：基于值编码的文件，你可以根据具体应用，指定某个值（可以看作是自定义编码）。</p>
+<p>计算机的存储在物理上都是二进制的，所以文本文件与二进制文件在物理上都是一样的，区别在于其编码层次上，在具体编码中，ASCII码为一个字节即8位，而Unicode一般为2个字节16位，而二进制文件可以看成是变长编码，具体的编码方式完全可以自己定义。</p>
+<p>hello.c的表示方法说明了一个基本思想：系统中所有的信息——包括磁盘文件、存储器中的程序、存储器中存放的用户数据以及网络上传送的数据，都是由一串位表示的，区分不同数据对象的唯一方法师我们读到这些数据对象时的上下文，在不同上下文中，一个同样的字节序列可以表示一个整数、浮点数、字符串或者机器指令。</p>
+<h1 id="程序编译系统"><a href="#程序编译系统" class="headerlink" title="程序编译系统"></a>程序编译系统</h1><p><img src="http://oe0mec5i6.bkt.clouddn.com/compile.png" alt="编译系统"></p>
+<p>GCC编译器驱动程序读取源文件hello.c，把它翻译成一个可执行目标文件hello,该翻译过程分为4个阶段完成。执行这四个阶段的程序分别为预处理器、编译器、汇编器和链接器，如上图所示。</p>
+<ol>
+<li>预处理阶段：预处理器根据以字符#开头的命令，修改原始的C程序，如将hello.c中开头的<code>#include &lt;stdio.h&gt;</code>告诉预处理器读取stdio.h中的内容并把它直接插入到程序文本中。得到另一个C程序，通常以.i作为文件扩展名，对应的命令为 gcc -E hello.c -o hello.i</li>
+<li>编译阶段：编译器将文本文件hello.i翻译成文本文件hello.s，其是一个汇编语言程序，汇编语言的好处是它为不同高级语言的不同编译器提供了通用的输出语言，相当于提供了一层抽象。</li>
+<li>汇编阶段：汇编器将hello.s翻译成机器语言指令，并将结果保存在hello.o中，hello.o是一个二进制文件，它的字节编码是机器语言指令而不是字符，如果我们用文本文件打开它，将是一堆乱码。</li>
+<li>链接阶段：hello程序中调用了printf函数，printf函数存在于一个名为printf.o的单独的预编译好了的目标文件中，链接器将处理这种合并，得到可执行文件hello，它可以被加载到内存中，由系统执行。</li>
+</ol>
+<p>了解编译系统如何工作是大有溢出的，原因有：</p>
+<ol>
+<li>优化程序性能，编译器中有许多的优化措施</li>
+<li>理解链接时出现的错误：静态链接与动态链接</li>
+<li>避免安全漏洞</li>
+</ol>
+<h1 id="处理器执行指令"><a href="#处理器执行指令" class="headerlink" title="处理器执行指令"></a>处理器执行指令</h1><p>我们在类Unix系统或Linux系统中执行该可执行文件，一般是在shell中，shell是一个命令行解释器，它输出一个提示符，等待你输入一个命令行，然后执行这个命令。如果该命令行第一个单词不是一个内置shell命令，则shell会假设这是一个可执行文件的名字，加载并执行该文件。如下所示:<br><img src="http://oe0mec5i6.bkt.clouddn.com/shell.png" alt="Shell加载"></p>
+<h2 id="系统硬件组成"><a href="#系统硬件组成" class="headerlink" title="系统硬件组成"></a>系统硬件组成</h2><p><img src="http://oe0mec5i6.bkt.clouddn.com/systen_hardware.png" alt="系统硬件组成"><br>上图是一个典型系统的硬件组织。</p>
+<ol>
+<li>总线：一组电子管道，它携带信息字节并负责在各个部件间传递。通常总线被设计成传送定长的字节块，也就是字（word），字中的字节数（即字长）是一个基本的系统参数，在各个系统中情况不尽相同，现在一般机器字长为4个字节（32位），有的是8个字节（64位）。</li>
+<li>I/O设备：I/O设备(输入输出设备)是系统与外部世界的联系通道，如上图中的键盘，鼠标，显示器，以及磁盘等。每个I/O设备都通过一个控制器或适配器与I/O总线相连。控制器与适配器区间主要在于它们的封装方式。控制器是置于I/O设备本身的或者系统的主印制电路板（主板）上的芯片组，而适配器则是一块插在主板插槽上的卡。</li>
+<li>主存：从物理上说，由一组动态随机存取存储器（DRAM）芯片组成，从逻辑上说，是一个线性的字节数组，每个字节都有其唯一的地址。</li>
+<li>处理器：中央处理单元（CPU），简称处理器，是解释执行存储在主存中指令的引擎。处理器的核心是一个字长的寄存器，也称为程序计数器（PC），在任何时刻，PC都指向主存中某条机器语言指令（即含有该条指令的地址）。当然，除了PC，还有一些1字长的寄存器，每次执行都会更新PC，指向下一条指令，当然这里下一条指令不一定和存储器中刚刚执行的指令相邻。算术逻辑单元（ALU）计算新的数据和地址值，通常分为加载、存储、操作以及跳转几个操作。现代处理其实是非常复杂的，并不是只是它的指令集结构看上去那么简单。我们这样区分处理器的指令集结构和微体系结构：指令集结构描述的是每条机器代码指令的效果；而微体系结构描述的是处理器实际上是如何实现的。</li>
+</ol>
+<p>直接存储器存取（DMA）：数据可以不通过处理器而直接从磁盘到达主存。</p>
+<h1 id="高速缓存"><a href="#高速缓存" class="headerlink" title="高速缓存"></a>高速缓存</h1><p><img src="http://oe0mec5i6.bkt.clouddn.com/storage_level.png" alt="存储器层次结构"></p>
+<p>存储器之间的存取速度是相差很大的，高速缓存作为暂时的集结区域，用来存放处理器近期可能会需要的信息。高速缓存也可以有很多级，如L1,L2甚至到L3的。高速缓存一般用一种叫做静态随机访问存储器（SRAM）的硬件技术实现的。</p>
+<p>局部性原理：即程序具有访问局部区域里的数据和代码的趋势，通过让高速缓存存放可能经常访问的数据的方法，大部分的高速缓存操作都能在快速的高速缓存中完成。</p>
+<h1 id="操作系统管理硬件"><a href="#操作系统管理硬件" class="headerlink" title="操作系统管理硬件"></a>操作系统管理硬件</h1><p><img src="http://oe0mec5i6.bkt.clouddn.com/system_level.png" alt="计算机系统的分层试图"><br>当Shell加载和运行hello程序是，shell和hello程序都没有直接访问键盘、显示器、磁盘或者主存，取而代之的是，它们依靠操作系统提供的服务。</p>
+<p>操作系统有两个基本功能：</p>
+<ol>
+<li>防止硬件被失控的应用程序滥用</li>
+<li>向应用程序提供简单一致的机制来控制复杂而又通常大相径庭的低级硬件设备</li>
+</ol>
+<p>操作系统通过几个基本的抽象概念（进程、虚拟存储器和文件）来实现上述两个功能。文件是对I/O设备的抽象表示，虚拟存储器是对主存和磁盘I/O设备的抽象表示，进程则是对处理器、主存和I/O设备的抽象表示。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/abstract1.png" alt="操作系统提供的抽象表示"></p>
+<h2 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h2><p>进程是操作系统对一个正在运行的程序的一种抽象，一个系统中可以同时运行多个进程，而每个进程都好像独占地使用硬件。并发运行时指一个进程的指令和另一个进程的指令交错执行。</p>
+<p>进程间实现进程间交错执行的机制称为上下文切换，而操作系统保持跟踪进程运行所需的所有状态信息，这种状态也就是上下文，它包括许多信息，如PC何寄存器文件的当前值，以及主存的内容。当操作系统决定要把控制器从当前进程转移到某个新进程时，就会进行上下文切换，即保存当前进程的上下文、恢复新进程的上下文，然后将控制权转移到新进程。下图展示了hello程序运行场景：<br><img src="http://oe0mec5i6.bkt.clouddn.com/contex.png" alt="hello程序运行场景"></p>
+<p>该示例场景中有两个并发的进程：shell进程和hello进程。起初，只有shell进程在运行，即等待命令行上的输入。当我们让它运行hello程序时，shell通过调用系统调用函数，来执行我们的请求，系统调用会将控制权传递给操作系统。操作系统保存shell进程的上下文，创建一个新的hello进程及其上下文，然后将控制权传递给新的hello进程。hello进程终止后，操作系统恢复shell进程的上下文，并将控制权传回给它，shell进程将继续等待下一个命令行输入。</p>
+<h2 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h2><p>现代操作系统中，一个进程实际上可以由多个称为线程的执行单元组成，每个线程都运行在进程的上下文中，并共享同样的代码和全局数据。因为多线程之间比多进程之间更容易共享数据，也因为线程一般来说都比进程更高效。</p>
+<h2 id="虚拟存储器"><a href="#虚拟存储器" class="headerlink" title="虚拟存储器"></a>虚拟存储器</h2><p>虚拟存储器是一个抽象概念，它为每个进程提供了一个假象，即每个进程都在独占地使用主存。每个进程看到的是一致的存储器，称为虚拟地址空间。下图是Linux进程的虚拟地址空间。地址空间最上面的区域是伪操作系统中的代码和数据保留的，这对所有进程来说都是一样的。地址空间的底部区域存放用户进程定义的代码和数据，图中的地址从下往上市增大的。<br><img src="http://oe0mec5i6.bkt.clouddn.com/address.png" alt="进程的虚拟地址空间"></p>
+<p>每个进程看到的虚拟地址空间是由大量准确定义的区构成，每个区都有专门的功能。</p>
+<h3 id="程序代码和数据"><a href="#程序代码和数据" class="headerlink" title="程序代码和数据"></a>程序代码和数据</h3><p>对于所有进程来说，代码都是从同一固定地址开始的，紧接着的是和C全局变量相对应的数据位置。代码和数据区是直接按照可执行目标文件的内容初始化的，如可执行文件hello。</p>
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>代码和数据区后紧随着的是运行时堆。代码和数据区是在进程一开始运行时就被规定了大小，与此不同，当调用malloc和free等C标准库函数时，堆可以在运行时动态地扩展和收缩。</p>
+<h3 id="共享库"><a href="#共享库" class="headerlink" title="共享库"></a>共享库</h3><p>大约在地中空间中间部分是一块用来存放像C标准库和数学库这样共享库的代码和数据区域。共享库的概念非常强大，而且也相当难懂，在未来讲动态链接时再详细展开讨论。</p>
+<h3 id="栈"><a href="#栈" class="headerlink" title="栈"></a>栈</h3><p>位于用户虚拟地址空间顶部的是用户栈，编译器用它来实现函数调用。和堆一样，用户栈在程序执行期间可以动态地扩展和收缩。每次我们调用一个函数时，栈就会增长；从一个函数返回时，栈就会收缩。</p>
+<h3 id="内核虚拟存储器"><a href="#内核虚拟存储器" class="headerlink" title="内核虚拟存储器"></a>内核虚拟存储器</h3><p>内核总是驻留在内存中，是操作系统的一部分。地址空间顶部的区域是为内核保留的，不允许应用程序读写这个区域的内容或直接调用内核代码定义的函数。</p>
+<p>虚拟存储器的运作需要硬件和操作系统软件之间精密复杂的交互，包括对处理器生成的每个地址的硬件翻译。其基本思想是把一个进程虚拟存储器的内存存储在磁盘上，然后用主存作为磁盘的高速缓存。</p>
+<h2 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h2><p>文件就是字节序列，仅此而已。每个I/O设备，包括磁盘、键盘、显示器、甚至网络，都可以视为文件。系统中所有输入输出都是通过使用一个小组称为Unix I/O的系统函数调用读写文件来实现的。</p>
+<p>文件为应用程序提供了一个统一的视角，来看待系统中可能含有的所有各式各样的I/O设备。</p>
+<h1 id="系统间网络通信"><a href="#系统间网络通信" class="headerlink" title="系统间网络通信"></a>系统间网络通信</h1><p>现代系统通常通过网络和其他系统连接在一起，从一个单独的机器来看，网络可以视作一个I/O设备。通过网络适配器，可以从网络中读取一段数据，也可以通过网络适配器发送一段数据到其他机器。</p>
+<h1 id="重要主题"><a href="#重要主题" class="headerlink" title="重要主题"></a>重要主题</h1><h2 id="并发与并行"><a href="#并发与并行" class="headerlink" title="并发与并行"></a>并发与并行</h2><p>并发是一个通用的概念，指一个同时具有多个活动的系统。而并行是指用并发使一个系统运行的更快，并行在计算机系统的多个抽象层次上运用。</p>
+<h3 id="线程级并发"><a href="#线程级并发" class="headerlink" title="线程级并发"></a>线程级并发</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/multi_core.png" alt="所有的处理器"><br>多处理器系统：由单操作系统内核控制的多处理器组成的系统。多处理器有多核系统以及超线程。</p>
+<p>多核：就是有多个CPU核，如下图所示为Intel Core i7处理器的组织结构，微处理器芯片有4个CPU核，每个核有自己的L1和L2高速缓存，但是它们共享更高层次的高速缓存，以及到主存的接口。<br><img src="http://oe0mec5i6.bkt.clouddn.com/core_i7.png" alt="Intel Core i7"></p>
+<p>超线程：由称为同时多线程，是一项允许一个CPU执行多个控制流的技术。它涉及CPU某些硬件的多个备份，如程序计数器和寄存器文件；而其他的硬件部分只有一份，比如执行浮点算术运算的单元。举例来说，Intel Core i7处理器可以让一个核执行两个线程，所以一个4核的系统实际上可以并行地执行8个线程。</p>
+<p>多处理器在两个方面提高了系统性能：</p>
+<ol>
+<li>减少了在执行多个任务时模拟并发的需要</li>
+<li>使应用程序运行地更快</li>
+</ol>
+<h3 id="指令级并行"><a href="#指令级并行" class="headerlink" title="指令级并行"></a>指令级并行</h3><p>现代处理器同时可以执行多条指令的属性称为指令级并行。每条指令从开始到结束需要大约20个甚至更多的周期，但是处理器使用了很多聪明技巧来同时处理各种指令。流水线技术奖一条指令所需要的活动划分为不同的步骤，将处理器的硬件组织成一系列的阶段，每个阶段执行一步。</p>
+<p>超标量：如果处理器可以达到比一个时钟周期一条指令更快的执行速率，就称之为超标量(superscalar)处理器。</p>
+<h3 id="单指令、多数据并行"><a href="#单指令、多数据并行" class="headerlink" title="单指令、多数据并行"></a>单指令、多数据并行</h3><p>在最低层次上，许多现代处理器拥有特殊的硬件，允许一条指令产生多个可以并行执行的操作，这种方式称为单指令、多数据，即SIMD并行。</p>
+<h2 id="计算机系统中抽象的重要性"><a href="#计算机系统中抽象的重要性" class="headerlink" title="计算机系统中抽象的重要性"></a>计算机系统中抽象的重要性</h2><p><img src="http://oe0mec5i6.bkt.clouddn.com/abstract2.png" alt="抽象"></p>
+<p>抽象的使用是计算机科学中最为重要的概念之一。如上图所示：指令集结构提供了对实际处理器硬件的抽象，而在学习操作系统中，文件是对I/O的抽象，虚拟存储器是对程序存储器的抽象，而进程是对一个正在运行的程序的抽象。而虚拟机是对整个计算机的抽象。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2017-03-14, 12:06:11</p>
+        <p><span>最后更新:</span>2017-03-14, 14:37:00</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/03/14/程序员角度看计算机系统/" title="程序员角度看计算机系统">http://bigmingtalk.github.io/2017/03/14/程序员角度看计算机系统/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/14/程序员角度看计算机系统/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/02/09/Fibonacci数列的O-logn-解法/">
+                    Fibonacci数列的O(logn)解法
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#信息就是位-上下文"><span class="toc-number">1.</span> <span class="toc-text">信息就是位+上下文</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#程序编译系统"><span class="toc-number">2.</span> <span class="toc-text">程序编译系统</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#处理器执行指令"><span class="toc-number">3.</span> <span class="toc-text">处理器执行指令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#系统硬件组成"><span class="toc-number">3.1.</span> <span class="toc-text">系统硬件组成</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#高速缓存"><span class="toc-number">4.</span> <span class="toc-text">高速缓存</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#操作系统管理硬件"><span class="toc-number">5.</span> <span class="toc-text">操作系统管理硬件</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#进程"><span class="toc-number">5.1.</span> <span class="toc-text">进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#线程"><span class="toc-number">5.2.</span> <span class="toc-text">线程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#虚拟存储器"><span class="toc-number">5.3.</span> <span class="toc-text">虚拟存储器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#程序代码和数据"><span class="toc-number">5.3.1.</span> <span class="toc-text">程序代码和数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#堆"><span class="toc-number">5.3.2.</span> <span class="toc-text">堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#共享库"><span class="toc-number">5.3.3.</span> <span class="toc-text">共享库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#栈"><span class="toc-number">5.3.4.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#内核虚拟存储器"><span class="toc-number">5.3.5.</span> <span class="toc-text">内核虚拟存储器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件"><span class="toc-number">5.4.</span> <span class="toc-text">文件</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#系统间网络通信"><span class="toc-number">6.</span> <span class="toc-text">系统间网络通信</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#重要主题"><span class="toc-number">7.</span> <span class="toc-text">重要主题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#并发与并行"><span class="toc-number">7.1.</span> <span class="toc-text">并发与并行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#线程级并发"><span class="toc-number">7.1.1.</span> <span class="toc-text">线程级并发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#指令级并行"><span class="toc-number">7.1.2.</span> <span class="toc-text">指令级并行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#单指令、多数据并行"><span class="toc-number">7.1.3.</span> <span class="toc-text">单指令、多数据并行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#计算机系统中抽象的重要性"><span class="toc-number">7.2.</span> <span class="toc-text">计算机系统中抽象的重要性</span></a></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"程序员角度看计算机系统　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/03/14/程序员角度看计算机系统/" data-title="程序员角度看计算机系统" data-url="http://bigmingtalk.github.io/2017/03/14/程序员角度看计算机系统/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/02/09/Fibonacci数列的O-logn-解法/" title="下一篇: Fibonacci数列的O(logn)解法">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">Java容器（Java Collection Framework）总览</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
