@@ -288,8 +288,9 @@
     <div class="article-entry" itemprop="articleBody">
       
           
-        <a id="more"></a>
-
+              <p>早期计算机系统的存储器层次结构只有三层：CPU寄存器、DRAM主存和磁盘存储。不过，由于CPU和主存之间逐渐增大的差距，系统设计者在CPU寄存器和主存之间插入了一个小的SRAM作为高速缓存存储器，称为L1高速缓存（一级缓存），L1缓存访问速度几乎和寄存器一样快，典型的为2~4个周期。随着差距由越来越大，系统设计者又在L1高速缓存和主存之间插入了更大的L2高速缓存，大约10个时钟周期访问到，在L2和主存之间加入比L2更大的高速缓存L3等，大约30~40个时钟周期访问到。</p>
+<p>虽然安排上有很多变化，但是通用原则是一样的为了方便讨论，我们假设一个简单的存储器层次结构，CPU和主存之间只有一个L1高速缓存。</p>
+          
       
     </div>
     
@@ -306,6 +307,10 @@
         <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多路组相联/">多路组相联</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/直接映射，全相联/">直接映射，全相联</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/高速缓存/">高速缓存</a></li></ul>
     </div>
 
+      
+        <p class="article-more-link">
+          <a href="/2017/03/16/深入浅出理解高速缓存及多路组相联/#more">阅读全文 >></a>
+        </p>
       
       <div class="clearfix"></div>
     </div>
