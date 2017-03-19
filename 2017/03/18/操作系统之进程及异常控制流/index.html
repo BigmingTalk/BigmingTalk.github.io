@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="处理器充电后，程序计数器中会有一系列的指令相继执行，两次指令执行之间的过度称为控制转移，控制转移的序列称为控制流。最简单的控制流是平滑的，也就是连续执行的两次指令在存储器中是相邻的，但也可能由诸如跳转、调用和返回导致不相邻。我们称使控制流突变称为异常控制流。异常控制流出现在各个层次中。常见的异常控制流有：
+
+异常：位于硬件和操作系统交界的部分。
+系统调用：为应用程序到操作系统的入口点的异常。
+进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统之进程及异常控制流">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/03/18/操作系统之进程及异常控制流/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="处理器充电后，程序计数器中会有一系列的指令相继执行，两次指令执行之间的过度称为控制转移，控制转移的序列称为控制流。最简单的控制流是平滑的，也就是连续执行的两次指令在存储器中是相邻的，但也可能由诸如跳转、调用和返回导致不相邻。我们称使控制流突变称为异常控制流。异常控制流出现在各个层次中。常见的异常控制流有：
+
+异常：位于硬件和操作系统交界的部分。
+系统调用：为应用程序到操作系统的入口点的异常。
+进程">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_65.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_66.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_67.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_68.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_69.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_70.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_71.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_72.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_73.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_74.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_75.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_76.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_77.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_78.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_79.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_80.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_81.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_82.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_83.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_84.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_85.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_86.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_87.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_88.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_89.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_90.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_91.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_92.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_93.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_94.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_95.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_96.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_97.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_98.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_99.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_100.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_102.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_103.png">
+<meta property="og:updated_time" content="2017-03-19T03:46:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统之进程及异常控制流">
+<meta name="twitter:description" content="处理器充电后，程序计数器中会有一系列的指令相继执行，两次指令执行之间的过度称为控制转移，控制转移的序列称为控制流。最简单的控制流是平滑的，也就是连续执行的两次指令在存储器中是相邻的，但也可能由诸如跳转、调用和返回导致不相邻。我们称使控制流突变称为异常控制流。异常控制流出现在各个层次中。常见的异常控制流有：
+
+异常：位于硬件和操作系统交界的部分。
+系统调用：为应用程序到操作系统的入口点的异常。
+进程">
+<meta name="twitter:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_65.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>操作系统之进程及异常控制流 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B*树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B+树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B-树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B树/">B树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DRAM/">DRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JCF/">JCF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ROM/">ROM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SRAM/">SRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多路组相联/">多路组相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/容器/">容器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常控制流/">异常控制流</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/整数/">整数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/浮点数/">浮点数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/直接映射，全相联/">直接映射，全相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/磁盘/">磁盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/符号解析/">符号解析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/索引/">索引</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重定位/">重定位</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链接/">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/高速缓存/">高速缓存</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-操作系统之进程及异常控制流" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/03/18/操作系统之进程及异常控制流/" class="article-date">
+      <time datetime="2017-03-18T11:12:31.000Z" itemprop="datePublished">2017-03-18</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      操作系统之进程及异常控制流
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/计算机系统/">计算机系统</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/信号/">信号</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/异常控制流/">异常控制流</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/线程/">线程</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/进程/">进程</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>处理器充电后，程序计数器中会有一系列的指令相继执行，两次指令执行之间的过度称为控制转移，控制转移的序列称为控制流。最简单的控制流是平滑的，也就是连续执行的两次指令在存储器中是相邻的，但也可能由诸如跳转、调用和返回导致不相邻。我们称使控制流突变称为异常控制流。异常控制流出现在各个层次中。常见的异常控制流有：</p>
+<ol>
+<li>异常：位于硬件和操作系统交界的部分。</li>
+<li>系统调用：为应用程序到操作系统的入口点的异常。</li>
+<li>进程和信号：位于应用和操作系统的交界之处。</li>
+<li>非本地跳转：异常控制流的一种应用层形式。</li>
+</ol>
+<a id="more"></a>
+<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><p>异常一部分由硬件实现，一部分由操作系统实现。异常就是控制流中的突变，用来响应处理器状态中的某些变化。异常的基本思想如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_65.png" alt="异常的剖析"></p>
+<p>在处理器中状态被编码为不同的位和信号，状态变化称为事件。事件可能和当前指令的执行直接相关，如发生虚拟存储器缺页、算术溢出，或者一条指令试图除以零；也有可能与当前指令的执行无关，如一个系统定时器产生信号或者一个I/O请求完成。</p>
+<p>任何情况下当处理器检测到有事件发生时，它就会通过一张叫做异常表的跳转表，进行一个间接过程调用（异常），到一个专门设计用来处理这类事件的操作系统子程序（异常处理程序，exception handler）。</p>
+<p>当一次处理程序完成处理后，根据异常事件的类型，会发生以下三种情况之一：</p>
+<ol>
+<li>处理程序将控制返回给当事件发生时正在执行的指令。</li>
+<li>处理程序将控制返回给如果没有发生异常时将会执行的下一条程序。</li>
+<li>处理程序终止被中断的程序。</li>
+</ol>
+<h3 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h3><p>异常处理需要软硬件紧密合作。系统中可能的每种类型的异常都分配了一个唯一的非负整数的异常号。一部分异常号是处理器设计者分配，另一部分是操作系统内核设计者分配。前者包括被零除、缺页、存储器访问违例、断点以及算术溢出，后者包括系统调用和来自外部I/O涉笔的信号。异常表如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_66.png" alt="异常表"></p>
+<p>异常表的起始地址放在一个叫做异常表基址寄存器的特殊CPU寄存器中。生成异常处理程序地址的过程如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_67.png" alt="异常处理程序"></p>
+<p>异常类似于过程调用，但是也有一些重要的不同之处如下：</p>
+<ol>
+<li>过程调用时在调整到处理程序之前，处理器将返回地址压入栈中，而异常时根据类型返回地址要么是当前指令，要么是下一条指令。</li>
+<li>过异常处理程序需要处理器把一些额外的处理器状态压到栈里，处理程序返回时重新开始被中断的程序会需要这些状态，比如当前条件码以及其他内容的寄存器内容。</li>
+<li>异常处理程序如果控制一个用户程序转移到内核，那么这些项目被压入到内核栈，而不是用户栈。</li>
+<li>异常处理程序在内核模式下。</li>
+</ol>
+<p>当异常处理程序处理完事件之后，执行一条“中断返回”的指令，可选地址返回到被中断的程序，该指令将适当的状态弹回到处理器的控制和数据寄存器中，如果异常中断的是一个用户程序，就将状态恢复为用户模式。</p>
+<h3 id="异常分类"><a href="#异常分类" class="headerlink" title="异常分类"></a>异常分类</h3><p>异常可以分为四类：中断、陷阱、故障和终止。中断是异步的，而其他的异常类型是同步发生的。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_68.png" alt="异常的类别"></p>
+<h4 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h4><p>中断是异步发生的，是来自处理器外部的I/O设备的信号的结果。硬件中断不是由任何一条专门的指令造成的，从这个意义上来说它的异步的。硬件中断的异常处理程序称为中断处理程序。下图是一个中断的处理：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_69.png" alt="中断处理"></p>
+<h4 id="陷阱和系统调用"><a href="#陷阱和系统调用" class="headerlink" title="陷阱和系统调用"></a>陷阱和系统调用</h4><p>陷阱是有意的异常，是执行一条指令的结果，和中断处理程序一样，陷阱处理程序将控制权返回到下一条指令。示意图如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_70.png" alt="系统调用"></p>
+<p>陷阱最重要的用途是在用户程序和内核之间提供一个像过程一样的接口，称为系统调用。用户程序向内核请求服务，比如读一个文件(read)，创建一个新的进程(fork)，加载一个新的程序(execve)，或者终止当前进程(exit)。为了允许这些内核服务的受控的访问，处理器提供了一条特殊的指令”syscall n”指令。当用户程序想要服务n时，执行该指令。执行syscall指令会导致一个到异常处理程序的陷阱，该处理程序对参数解码，并调用适当的内核程序。</p>
+<p>从程序员角度看，系统调用和普通函数调用时一样的，但是其实普通函数调用运行在用户模式，用户模式限制了函数可以执行的指令的类型，而且只能访问与调用函数相同的栈。而系统调用运行在内核模式，允许执行任何指令，并访问定义在内核中的栈。</p>
+<h4 id="故障"><a href="#故障" class="headerlink" title="故障"></a>故障</h4><p>故障由错误情况引起，它可能被故障修复程序修正。故障发生时处理器将控制转移给故障处理程序。如果处理程序能修正错误情况，就将控制返回到引起故障的指令，从而重新执行它。否则，处理程序返回到内核的abort例程，abort例程会终止引起故障的引用程序。故障处理如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_71.png" alt="故障处理"></p>
+<p>经典的故障示例是缺页异常，当指令引用一个虚拟地址，而与该地址相对应的物理页面不存在存储器，就需要从磁盘中取，故而引发故障。一个页面时虚拟存储器中一个连续的块（一般为4KB）。缺页处理程序从磁盘加载适当的页面，然后将控制返回给引起故障的指令。当指令再次执行时，相应的物理页面已经驻留在存储器中了，指令就可以没有故障地运行完成。</p>
+<h4 id="终止"><a href="#终止" class="headerlink" title="终止"></a>终止</h4><p>终止是不可恢复的致命错误造成的结果，通常是一些硬件错误，如DRAM或者SRAM位被损坏时发生的奇偶错误。终止处理程序从不将控制返回给应用程序，示意图如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_72.png" alt="终止"></p>
+<h3 id="Linux-IA32系统中的异常"><a href="#Linux-IA32系统中的异常" class="headerlink" title="Linux/IA32系统中的异常"></a>Linux/IA32系统中的异常</h3><p>IA32系统定义了256种不同的异常类型，0~31是Intel架构师定义的异常。如下图所示:<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_73.png" alt="IA32系统异常示例"></p>
+<h4 id="Linux-IA32故障和终止"><a href="#Linux-IA32故障和终止" class="headerlink" title="Linux/IA32故障和终止"></a>Linux/IA32故障和终止</h4><ul>
+<li>除法错误：除以零，或者结果对于目标操作数太大，Linux不会试图从除法错误中恢复，而是中止程序，Linux外壳通常将除法错误报告为“浮点异常”。</li>
+<li>一般保护故障：引用一个未定义的虚拟存储器区域，或者程序试图写一个只读的文本段。Linux不会试图恢复该类故障，Linux外壳将其报告为“段故障(Segmention fault)”。</li>
+<li>缺页：会重新执行产生故障的指令的一个异常示例。处理程序将磁盘上的页加载到存储器中，然后重新开始执行产生该故障的指令。</li>
+<li>机器检查：检测到硬件错误，不返回控制给应用程序。</li>
+</ul>
+<h4 id="Linux-IA32系统调用"><a href="#Linux-IA32系统调用" class="headerlink" title="Linux/IA32系统调用"></a>Linux/IA32系统调用</h4><p>Linux提供了上百种系统调用，常见的系统调用如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_74.png" alt="Linux系统调用"></p>
+<p>每个系统调用都有一个唯一的整数号，对应于一个到内核中跳转表的偏移量。在IA32上，系统调用通过一条int n的陷阱指令提供，其中n可能是异常表中256个条目中任何一个条目。C程序用syscall函数可以调用任何系统调用，但是标准C库提供了一组方便的包装函数，这些包装函数将参数打包到一起，以适当的系统调用号陷入内核，然后将系统调用的返回状态传递回调用程序。</p>
+<h2 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h2><p>进程的节点定义就是一个执行中的程序的实例。系统中每个程序都是运行在某个进程的上下文中，上下文是由程序正确运行所需的状态组成的。这些状态包括存放在存储器中的程序的代码和数据，它的栈、通用目的寄存器的内容、程序计数器、环境变量以及代开文件描述符的集合。</p>
+<p>进程提供给应用程序两个关键的抽象：</p>
+<ol>
+<li>一个独立的逻辑控制流，它提供一个假象，好像我们的程序独占地使用处理器。</li>
+<li>一个私有的地址空间，它提供一个假象，好像我们的程序独占地使用存储器系统。</li>
+</ol>
+<h3 id="逻辑控制流"><a href="#逻辑控制流" class="headerlink" title="逻辑控制流"></a>逻辑控制流</h3><p>如果单步地执行程序，可以看到一系列的程序计数器（PC）的值，这些值唯一地对应于包含在程序的可执行目标文件中的指令，或者是包含在运行时动态链接到程序的共享对象中的指令，这个PC值的序列叫做逻辑控制流，或简称逻辑流。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_75.png" alt="逻辑控制流"></p>
+<h3 id="并发流"><a href="#并发流" class="headerlink" title="并发流"></a>并发流</h3><p>一个逻辑流的执行在时间上与另一个流重叠，称为并发流，这两个流称为并发地运行。更准确地说，流X和流Y互相并发，当且仅当X在Y开始之后和Y结束之前开始，或者Y在X开始之后和X结束之前开始。例如，上一个图中A和B并发，A和C也并发，但是B和C没有并发，因为B的最后一套指令在C的第一条指令之前执行。</p>
+<p>多个流并发的执行的一般现象称为并发，一个进程和其他进程流量运行的概念称为多任务。一个进程执行它的控制流的一部分的每一时间段叫做时间片。因此，多任务也叫做时间分片。</p>
+<p>并发色思想与流运行的处理器核数或者计算机数无关。如果两个流在时间上重叠，那么它们就是并发的，即使它们是运行在同一个处理器上。如果两个流并发地运行在不同的处理器核或者计算机上，我们称它们为并行流，它们并发地运行，且并行地执行。</p>
+<h3 id="私有地址空间"><a href="#私有地址空间" class="headerlink" title="私有地址空间"></a>私有地址空间</h3><p>进程为每个程序提供了一个假象，好像它独占地使用系统地址空间。若计算机的地址为n位，则地址空间为2^n个可能地址的集合。每个进程为每个程序提供其私有地址空间。每个私有地址空间相关联的存储器内容一般是不同的，但是每个空间都有相似的统一结构。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_76.png" alt="进程地址空间"></p>
+<h3 id="用户模式和内核模式"><a href="#用户模式和内核模式" class="headerlink" title="用户模式和内核模式"></a>用户模式和内核模式</h3><p>处理器为了限制一个应用可以执行的指令以及它可以访问的地址空间范围，处理器通常在某个控制寄存器中有一个模式位。该寄存器描述了进程当前享有的特权。当设置了模式位时，进程就运行在内核模式中，也叫超级用户模式。</p>
+<p>一个运行在内核模式的进程可以执行指令集中的任何指令，并且可以访问系统中任何存储器位置。而用户模式时额不允许执行特权指令，比如停止处理器，改变模式位，或者发起一个I/O操作。也不允许用户模式中的进程直接引用地址空间中内核区内的代码和数据。任何这种尝试都会导致保护故障。用户程序必须通过系统调用接口间接地访问内核代码和数据。</p>
+<p>运行应用程序代码的进程初始时是在用户模式中的。进程从用户模式变为内核模式的唯一方法是通过诸如中断、故障或者陷入系统调用这样的异常。当异常发生时，控制传递到异常处理程序，处理器将模式从用户模式变为内核模式，处理程序运行在内核模式中，当它返回到应用程序代码时，处理器将模式从内核模式转为用户模式。</p>
+<h4 id="proc文件系统"><a href="#proc文件系统" class="headerlink" title="/proc文件系统"></a>/proc文件系统</h4><p>Linux提供了/proc文件系统，运行用户模式进程访问内核数据结构的内容。/porc文件系统将许多内核数据结构的内容输出为一个用户程序可以读的文本文件的层次结构。比如可以用/proc文件系统找出一般的系统属性，比如CPU类型(/proc/cpuinfo)，或者某个特殊的进程使用的存储器段(/proc/<process id="">/maps)。Linux 2.6版本内核引入/sys文件系统，它输出关于系统总线和设备的额外的低层信息。</process></p>
+<h3 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h3><p>内核为每个进程维持一个上下文。上下文就是内核重新启动一个被强占的进程所需的状态。它由一些对象的值组成，包括通用目的寄存器、浮点寄存器、程序计数器、用户栈、状态寄存器、内核栈和各种内核数据结构，比如描绘地址空间的页表、包含有关当前进程信息的进程表，以及包含进程已经打开文件的信息的文件表。</p>
+<p>内核通过调度器来调度不同进程的运行，当调度了一个新的进程运行后，需要使用上下文切换的机制来将控制转移到新的进程。上下文切换包含：</p>
+<ol>
+<li>保存当前进程的上下文</li>
+<li>恢复某个先前被强占的进程的上下文</li>
+<li>将控制传递给这个新回复的进程</li>
+</ol>
+<p>中断也会引发上下文切换，比如周期性定时器中断机制，通常是1毫秒或10毫秒一次。下图展示了进程A通过执行系统调用read陷入到内核，内核的陷阱处理程序请求来自磁盘控制器的DMA传输，并且安排在磁盘控制器完成从磁盘到存储器的数据传输后，磁盘中断处理器。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_77.png" alt="上下文切换"></p>
+<h4 id="高速缓存污染"><a href="#高速缓存污染" class="headerlink" title="高速缓存污染"></a>高速缓存污染</h4><p>一般而言，硬件高速缓存存储器不暖和祖如中断和上下文切换这样的异常控制流很好地交互。如果当前进程被一个中断暂时中断，那么对于中断处理程序来说高速缓存是冷的，即程序所需要的数据都不在高速缓存中，如果处理程序从主存中访问了足够多的表项，那么当被中断的进程继续时，高速缓存对它来说也是冷的了。即中断处理程序污染了高速缓存。</p>
+<h3 id="系统调用错误处理"><a href="#系统调用错误处理" class="headerlink" title="系统调用错误处理"></a>系统调用错误处理</h3><p>通常，如果Unix系统级函数遇到错误时，会返回-1，并设置全局整数变量errno来表示什么出错了。程序员应该总是检查错误。我们一般通过包装函数来解决，比如写一个包装函数Fork来对fork进行包装，如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_78.png" alt="unix_error"><br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_79.png" alt="fork"></p>
+<h2 id="进程控制"><a href="#进程控制" class="headerlink" title="进程控制"></a>进程控制</h2><p>Unix提供了大量从C程序总操作进程的系统调用。</p>
+<h3 id="获取进程ID"><a href="#获取进程ID" class="headerlink" title="获取进程ID"></a>获取进程ID</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_80.png" alt="getpid"></p>
+<h3 id="创建和终止进程"><a href="#创建和终止进程" class="headerlink" title="创建和终止进程"></a>创建和终止进程</h3><p>我们可以简单地认为进程总是处于以下三种状态之一：</p>
+<ul>
+<li>运行：进程要么在CPU上执行，要么在等待被执行且最终会被内核调度。</li>
+<li>停止：进程的执行被挂起，且不会被调度。当收到SIGSTOP,SIGTSTP,SIGTTIN或者SIGTTOU信号时，进程就停止，并且保存停止知道她收到一个SIGCONT信号，这时进程再次开始运行（信号是一件软件中断的形式）</li>
+<li>终止：进程永远地停止了。进程会因为三种原因终止：1. 收到一个信号，该信号的默认行为是终止进程 2. 从主程序返回 3. 调用exit函数</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>exit函数以status退出状态来终止进程（另一种设置退出状态的方法是从主程序中返回一个整数值）。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_81.png" alt="exit"></p>
+<h4 id="创建进程"><a href="#创建进程" class="headerlink" title="创建进程"></a>创建进程</h4><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_82.png" alt="fork"></p>
+<p>新创建的子进程得到与父进程用户级虚拟地址空间相同的（但是独立的）一份拷贝，包括文本、数据和bss段、堆以及用户栈。子进程还获得与父进程任何打开文件描述符相同的拷贝，这意味着当父进程调用fork时，子进程可以读写父进程中打开的任何文件。而他们最大的区别是有不同的PID。</p>
+<p>fork函数调用一次，返回两次，父进程中返回子进程的ID（子进程ID肯定大于0），子进程中返回0。所以这样就会有各种各样的笔试题中会有考试，而且是常常结合逻辑运算中的短路一起考，问你最终有几个进程或者是输出什么，尼玛都是套路啊..当然fork也可能失败，则只有父进程返回-1。</p>
+<h4 id="回收子进程"><a href="#回收子进程" class="headerlink" title="回收子进程"></a>回收子进程</h4><p>当一个进程由于某种原因终止时，内核并不是立即把它从系统中清楚。相反，进程被保持在一种已终止的状态中，直到被它的父进程回收。当父进程回收已终止的子进程时，内核将子进程的退出状态传递给父进程，然后抛弃已终止的进程。从此时开始，该进程就不存在了。</p>
+<p>僵死进程：一个终止了但是还未被回收的进程。</p>
+<p>如果父进程没有回收它的僵死子进程就终止了，那么内核就会安排init进程来回收它们。init进程的PID为1，并且是在系统初始化时内核创建的。</p>
+<p>一个进程通过调用waitpid函数来等待它的子进程终止或者停止：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_83.png" alt="waitpid"></p>
+<h5 id="判断等待集合的成员"><a href="#判断等待集合的成员" class="headerlink" title="判断等待集合的成员"></a>判断等待集合的成员</h5><p>等待集合成员由参数pid来确定：</p>
+<ol>
+<li>如果pid&gt;0，那么等待集合就是一个单独的子进程，它的进程ID等于pid</li>
+<li>如果pid=-1，那么等待集合就是由父进程所有的子进程组成。</li>
+</ol>
+<p>waitpid函数还支持其他类型的等待集合，包括Unix进程组，这里不再展开讨论。</p>
+<h5 id="修改默认行为"><a href="#修改默认行为" class="headerlink" title="修改默认行为"></a>修改默认行为</h5><p>通过将options设置为WNOHANG和WUNTRACED的各种组合，修改默行为：</p>
+<ol>
+<li>WNOHANG：如果等待集合中的任何子进程都还没有终止，那么久立即返回（返回值为0）。默认的行为是挂起调用进程，直到有子进程终止。一般是在等待子进程终止的同时，如果还有些有用的工作，这个选项会有用。</li>
+<li>WUNTRACED：挂起调用进程的执行，直到等待集合中一个进程变为已终止或者被停止。返回的PID为导致返回的已终止或被停止子进程的PID。默认的行为是只返回已终止的子进程。当你想要检查已终止和被停止的子进程时，这个选项会有用。</li>
+<li>WNOHANG|WUNTRACED：立即返回，如果等待集合中没有任何子进程被停止或已终止，那么返回0，或者返回值等于那么被停止或已终止的子进程的PID。</li>
+</ol>
+<h5 id="检查已回收子进程的退出状态"><a href="#检查已回收子进程的退出状态" class="headerlink" title="检查已回收子进程的退出状态"></a>检查已回收子进程的退出状态</h5><p>如果status参数是非空的，那么waitpid就会在status参数放上关于导致返回的子进程的状态信息。wait.h头文件定义了解释status参数的几个宏：</p>
+<ol>
+<li>WIFEXITED：如果子进程通过调用exit或者一个返回正常终止，就返回真。</li>
+<li>WEXITSTATUS：返回一个正常终止的子进程的退出状态。只有在WIFEXITED返回为真时，才会定义这个状态。</li>
+<li>WIFSIGNALED：如果子进程是因为一个未被捕获的信号终止的，那么就返回真。</li>
+<li>WTERMSIG：返回导致子进程终止的信号的编号，只有在WIFSIGNALED返回为真时，才定义这个状态。</li>
+<li>WIFSTOPPED：如果引起返回的子进程当前是被停止的，那么返回为真。</li>
+<li>WSTOPSIG：返回引起子进程被停止的信号的编号，只有在WIFSTOPPED返回为真时，才定义这个状态。</li>
+</ol>
+<h5 id="错误条件"><a href="#错误条件" class="headerlink" title="错误条件"></a>错误条件</h5><p>如果调用进程没有子进程，那么waitpid返回-1，并且设置errno为ECHILD。如果waitpid函数被一个信号中断，那么它返回-1，并设置errno为EINTR。</p>
+<h5 id="wait函数"><a href="#wait函数" class="headerlink" title="wait函数"></a>wait函数</h5><p>wait函数是waitpid函数的一个简单版本，调用wait(&amp;status)等价于waitpid(-1, &amp;status, 0)。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_84.png" alt="wait"></p>
+<h4 id="让进程休眠"><a href="#让进程休眠" class="headerlink" title="让进程休眠"></a>让进程休眠</h4><p>sleep函数将一个进程挂起一段指定的时间。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_85.png" alt="sleep"></p>
+<p>如果请求的时间量到了，sleep返回0，否则返回还剩下的要休眠的秒数。后一种情况是可能的，如果因为sleep函数被一个信号中断而过早地返回。</p>
+<p>pause函数让调用进程休眠，直到该进程收到一个信号。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_86.png" alt="pause"></p>
+<h4 id="加载并运行程序"><a href="#加载并运行程序" class="headerlink" title="加载并运行程序"></a>加载并运行程序</h4><p>execve函数在当前进程的上下文中加载并运行一个新程序。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_87.png" alt="execve"><br>execve函数加载并运行可执行目标文件filename，且带参数列表argv和环境变量列表envp。只有当出现错误时，例如找不到filename，execve才会返回到调用程序。与fork一次调用返回两次不同，execve调用一次并从不返回。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_88.png" alt="列表组织结构"><br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_89.png" alt="新程序开始时用户栈"></p>
+<p>getenv函数在环境数组中搜索字符串”name=value”，如果找到了，就返回一个指向value的指针，否则返回NULL。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_90.png" alt="getenv"></p>
+<p>如果环境数组包含一个形如name=value的字符串，那么unsetenv会删除它，而setenv会用newvalue代替oldvalue，但是只有在overwrite非零时才会这样。如果name不存在，那么setenv就把name=newvalue添加到数组中。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_91.png" alt="setenv"></p>
+<h5 id="fork与execve的不同"><a href="#fork与execve的不同" class="headerlink" title="fork与execve的不同"></a>fork与execve的不同</h5><p>fork函数在新的子进程中运行相同的程序，新的子进程是父进程的一个复制品。execve函数在当前进程的上下文中加载并运行一个新的程序。它会覆盖当前进程的地址空间，但并没有创建一个新进程。新的程序仍然有相同的PID，并且继承了调用execve函数时已打开的所有文件描述符。</p>
+<h4 id="利用fork和execve运行程序"><a href="#利用fork和execve运行程序" class="headerlink" title="利用fork和execve运行程序"></a>利用fork和execve运行程序</h4><p>Unix外壳和Web服务器大量使用了fork和execve函数。外壳是一个交互性的应用级程序，它代表用户运行其他程序。最早的外壳是sh程序，后面出现了变种，如csh，tcsh，ksh，bash以及非常牛逼的zsh。外壳执行一系列的读/求值步骤然后终止。读步骤读取来自用户的一个命令行。求值步骤解析命令行，并代表用户运行程序。</p>
+<h2 id="信号"><a href="#信号" class="headerlink" title="信号"></a>信号</h2><p>一个信号就是一条小消息，它通知进程系统中发生了一个某种类型的事件。下图展示了Linux系统中支持的30种不同类型的信号。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_92.png" alt="Linux信号集"></p>
+<p>每种信号类型都对应于某种系统事件。低层的硬件异常是由内核异常处理程序处理的，正常情况下对用户进程不可见。信号提供了一种机制，通知用户进程发生了这些异常，比如一个进程试图除以零内核就发送一个SIGFPE信号给它。如果当进程在前台运行你键入ctrl-c则内核发送一个SIGINT信号给该前台进程。一个进程可以通过另一个进程发送一个SIGKILL信号强制终止它。当一个子进程终止或者停止时，内核会发送一个SIGCHLD信号给父进程。</p>
+<p>传送信号分为两步：</p>
+<ul>
+<li>发送信号：内核通过更新目的进程上下文中的某个状态，发送一个信号给目的进程。发送信号可以有如下两个原因：1. 内核检测到一个系统事件，比如被零除错误或者子进程终止。 2.一个进程调用了kill函数，显式地要求内核发送一个信号给目的进程，一个进程可以发送信号给它自己。</li>
+<li>接收信号：目的进程被内核强迫以某种方式对信号的发送做出反应时，目的进程就接收了信号。进程可以忽略这个信号，终止或者通过执行一个称为信号处理程序的用户层函数捕获这个信号。</li>
+</ul>
+<p>信号处理程序捕获信号的基本思想如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_93.png" alt="信号处理函数"></p>
+<p>待处理信号：一个只发出而没有被接收的信号叫做待处理信号。任何时刻一种类型至多只会有一个待处理信号。如果一个进程有一个类型为k的待处理信号，那么任何接下来发送到这个进程的类型为k的信号都不会排队等待，它们只是被简单地丢弃。</p>
+<p>阻塞：一个进程可以有选择性地阻塞接收某种信号。当一种信号被阻塞时，它仍可以被发送，但是产生的待处理信号不会被接收，直到进程取消对该信号的阻塞。</p>
+<p>一个待处理信号最多只能被接收一次。内核为每个进程在pending位向量中维护着待处理信号的集合，而在blocked位向量中维护着被阻塞的信号集合。只要接收到了一个类型为k的信号，内核就会设置pending中的第k位，而当接收了该类型为k的信号时，内核就会清除pending中的第k位。</p>
+<h3 id="发送信号"><a href="#发送信号" class="headerlink" title="发送信号"></a>发送信号</h3><p>Unix系统提供了很多向进程发送信号的机制，其都是基于进程组的概念提供的。</p>
+<h4 id="进程组"><a href="#进程组" class="headerlink" title="进程组"></a>进程组</h4><p>每个进程只属于一个进程组，进程组是由一个正整数进程组ID来标识的。getpgrp函数返回当前进程的进程组ID，如下图所示。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_94.png" alt="getpgrp"></p>
+<p>默认情况下一个子进程和它的父进程同属于一个进程组。setpgid设置进程pid的进程组改为pgid。如果pid为0，那么就是用当前进程的PID。如果pgid为0，那么就用pid指定的进程的PID作为进程组ID。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_95.png" alt="setpgid"></p>
+<p>例如进15642调用setpgid(0,0)会创建一个新的进程组，其进程组ID是15642，并且把进程15642加入到该新的进程组中。</p>
+<h4 id="用-bin-kill程序发送信号"><a href="#用-bin-kill程序发送信号" class="headerlink" title="用/bin/kill程序发送信号"></a>用/bin/kill程序发送信号</h4><p>命令 &gt; /bin/kill -9 15462将发送信号9（SIGKILL）给进程15462，一个为负的PID会导致信号被发送到进程组PID中的每个进程。比如 &gt; /bin/kill -9 -15462将发送一个SIGKILL信号给进程组15462中的每个进程。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_96.png" alt="kill"></p>
+<h4 id="从键盘发送信号"><a href="#从键盘发送信号" class="headerlink" title="从键盘发送信号"></a>从键盘发送信号</h4><p>Unix外壳用作业的抽象概念表示对一个命令行求值而创建的进程。任何时刻至多只有一个前台作业和0个或多个后台作业。比如 &gt; ls | sort创建一个由两个进程组成的前台作业，这两个进程通过Unix管道连接起来。一个进程运行ls程序，另一个运行sort程序。</p>
+<p>外壳为每个作业创建一个独立的进程组。进程组ID是取自作业中父进程中的一个。比如下图展示了有一个前台作业和两个后台作业的外壳。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_97.png" alt="前台和后台进程组"></p>
+<p>键盘中输入ctrl-c会导致一个SIGINT信号发送到外壳。外壳捕获该信号，然后发送SIGINT信号到前台进程组中的每个进程，默认情况下是终止前台作业。类似地输入ctrl -z是停止（挂起）前台作业。</p>
+<h3 id="接收信号"><a href="#接收信号" class="headerlink" title="接收信号"></a>接收信号</h3><p>当内核从一个异常处理程序返回，准备将控制传递给进程p时，内核会检查进程p的未被阻塞的待处理信号的集合(pengding&amp;~blocked)。如果该集合为空，那么内核将控制传递到p的逻辑控制流中的下一条指令。如果集合非空，那么内核选择集合中某个信号k（通常是最小的k），并且强制进程p接收信号k。</p>
+<p>每个信号类型都有一个预定义的默认行为，一般是：</p>
+<ul>
+<li>进程终止</li>
+<li>进程终止并转存存储器(dump core)</li>
+<li>进程挂起知道被SIGCONT信号重启</li>
+<li>进程忽略该信号</li>
+</ul>
+<p>进程可以通过使用signal函数修改和信号相关联的默认行为，唯一的例外是SIGSTOP和SIGKILL，它们的默认行为是不能被修改的。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_98.png" alt="signal"></p>
+<p>signal函数根据handler改变信号signum相关联的行为：</p>
+<ul>
+<li>handler为SIG_IGN，则忽略</li>
+<li>handler为SIG_DFL，那么类型为signum的信号恢复为默认行为</li>
+<li>否则，handler就是用户定义的函数的二地址，该函数称为信号处理程序，只要进程接收到一个类型为signum的信号，就会调用该程序。通过把处理程序的地址传递给signal函数从而改变默认行为，叫做设置信号处理程序。调用信号处理程序称为捕获信号。执行信号处理程序称为处理信号。</li>
+</ul>
+<h3 id="信号处理常见问题"><a href="#信号处理常见问题" class="headerlink" title="信号处理常见问题"></a>信号处理常见问题</h3><ol>
+<li>待处理信号被阻塞</li>
+<li>待处理信号不会排队等待</li>
+<li>系统调用可以被中断，被中断的系统调用在信号处理程序返回时不再继续，而是立即返回给用户一个错误条件，并将errno设置为EINTR。</li>
+</ol>
+<h2 id="非本地跳转"><a href="#非本地跳转" class="headerlink" title="非本地跳转"></a>非本地跳转</h2><p>C语言提供了一种用户级异常控制流形式，称为非本地跳转，它将控制直接从一个函数转移到另一个当前正在执行的函数，而不需要经过正常的调用-返回序列。非本地跳转是通过setjmp和longjmp函数来提供的。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_99.png" alt="setjmp"></p>
+<p>setjmp函数在env缓冲区中保存当前调用环境，以供后面longjmp使用，并返回0.调用环境包括程序计数器，栈指针和通用目的寄存器。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_100.png" alt="longjmp"><br>longjmp函数从env缓冲区中恢复调用环境，然后触发一个从最近一次初始化env的setjmp调用的返回。然后setjmp返回，并带有非零的返回值retval。</p>
+<p>setjmp函数只被调用一次，但返回多次，一次是当第一次调用setjmp，而调用环境保存在缓冲区env中时；一次是为每个相应的longjmp调用。而longjmp函数则被调用一次，但从不返回。</p>
+<p>非本地跳转的一个重要应用是允许从一个深层嵌套的函数调用中立即返回，通常是由检测到某种错误引起。如果一个深层嵌套的函数调用中发现一个错误，我们可以使用非本地跳转直接返回到一个普通的本地化的错误处理程序，而不是费力地解开调用栈。下图的代码是一个简单的实例。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_102.png" alt="非本地跳转实例"></p>
+<p>非本地跳转的另一个重要应用是使一个信号处理程序分支到一个特殊的代码位置，而不是返回到被信号到达中断了的指令的位置。下图程序在用键盘输入ctrl-c时，该程序用信号和非本地跳转实现软重启。具体原因是因为捕获SIGINT信号，交给handler处理，handler执行一个非本地跳转，回到主函数的开始处。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170319_103.png" alt="非本地跳转-信号处理"></p>
+<h3 id="C-和Java中的软件异常"><a href="#C-和Java中的软件异常" class="headerlink" title="C++和Java中的软件异常"></a>C++和Java中的软件异常</h3><p>C++和Java中的异常机制使更高层次的，是C语言的setjmp和longjmp函数的更加结构化的版本。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>异常控制流发生在计算机系统的各个层次，是计算机系统提供并发的基本机制。</p>
+<ul>
+<li>硬件层：异常时处理器中的某些事件触发的控制流中的突变。主要有四种不同的异常：中断、故障、终止和陷阱</li>
+<li>操作系统层：提供进程的概念，进程给用用提供两个抽象：<ul>
+<li>逻辑控制流：提供给每个程序一个假象，好像它是独占地使用处理器</li>
+<li>私有地址空间：提供给每个程序一个假象，好像它是在独占地使用主存</li>
+</ul>
+</li>
+<li>应用层：C程序使用非本地跳转来规避正常的调用/返回栈规则，直接从一个函数分支到另一个函数</li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/03/18/操作系统之进程及异常控制流/">操作系统之进程及异常控制流</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2017-03-18, 19:12:31</p>
+        <p><span>最后更新:</span>2017-03-19, 11:46:34</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/03/18/操作系统之进程及异常控制流/" title="操作系统之进程及异常控制流">http://bigmingtalk.github.io/2017/03/18/操作系统之进程及异常控制流/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/18/操作系统之进程及异常控制流/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/03/17/简单说说链接器和链接过程/">
+                    简单说说链接器和链接过程
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#异常"><span class="toc-number">1.</span> <span class="toc-text">异常</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#异常处理"><span class="toc-number">1.1.</span> <span class="toc-text">异常处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#异常分类"><span class="toc-number">1.2.</span> <span class="toc-text">异常分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#中断"><span class="toc-number">1.2.1.</span> <span class="toc-text">中断</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#陷阱和系统调用"><span class="toc-number">1.2.2.</span> <span class="toc-text">陷阱和系统调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#故障"><span class="toc-number">1.2.3.</span> <span class="toc-text">故障</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#终止"><span class="toc-number">1.2.4.</span> <span class="toc-text">终止</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-IA32系统中的异常"><span class="toc-number">1.3.</span> <span class="toc-text">Linux/IA32系统中的异常</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux-IA32故障和终止"><span class="toc-number">1.3.1.</span> <span class="toc-text">Linux/IA32故障和终止</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux-IA32系统调用"><span class="toc-number">1.3.2.</span> <span class="toc-text">Linux/IA32系统调用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#进程"><span class="toc-number">2.</span> <span class="toc-text">进程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#逻辑控制流"><span class="toc-number">2.1.</span> <span class="toc-text">逻辑控制流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#并发流"><span class="toc-number">2.2.</span> <span class="toc-text">并发流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#私有地址空间"><span class="toc-number">2.3.</span> <span class="toc-text">私有地址空间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用户模式和内核模式"><span class="toc-number">2.4.</span> <span class="toc-text">用户模式和内核模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#proc文件系统"><span class="toc-number">2.4.1.</span> <span class="toc-text">/proc文件系统</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#上下文切换"><span class="toc-number">2.5.</span> <span class="toc-text">上下文切换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#高速缓存污染"><span class="toc-number">2.5.1.</span> <span class="toc-text">高速缓存污染</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#系统调用错误处理"><span class="toc-number">2.6.</span> <span class="toc-text">系统调用错误处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#进程控制"><span class="toc-number">3.</span> <span class="toc-text">进程控制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取进程ID"><span class="toc-number">3.1.</span> <span class="toc-text">获取进程ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建和终止进程"><span class="toc-number">3.2.</span> <span class="toc-text">创建和终止进程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#终止进程"><span class="toc-number">3.2.1.</span> <span class="toc-text">终止进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建进程"><span class="toc-number">3.2.2.</span> <span class="toc-text">创建进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#回收子进程"><span class="toc-number">3.2.3.</span> <span class="toc-text">回收子进程</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#判断等待集合的成员"><span class="toc-number">3.2.3.1.</span> <span class="toc-text">判断等待集合的成员</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#修改默认行为"><span class="toc-number">3.2.3.2.</span> <span class="toc-text">修改默认行为</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#检查已回收子进程的退出状态"><span class="toc-number">3.2.3.3.</span> <span class="toc-text">检查已回收子进程的退出状态</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#错误条件"><span class="toc-number">3.2.3.4.</span> <span class="toc-text">错误条件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#wait函数"><span class="toc-number">3.2.3.5.</span> <span class="toc-text">wait函数</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#让进程休眠"><span class="toc-number">3.2.4.</span> <span class="toc-text">让进程休眠</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#加载并运行程序"><span class="toc-number">3.2.5.</span> <span class="toc-text">加载并运行程序</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#fork与execve的不同"><span class="toc-number">3.2.5.1.</span> <span class="toc-text">fork与execve的不同</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#利用fork和execve运行程序"><span class="toc-number">3.2.6.</span> <span class="toc-text">利用fork和execve运行程序</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#信号"><span class="toc-number">4.</span> <span class="toc-text">信号</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#发送信号"><span class="toc-number">4.1.</span> <span class="toc-text">发送信号</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#进程组"><span class="toc-number">4.1.1.</span> <span class="toc-text">进程组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用-bin-kill程序发送信号"><span class="toc-number">4.1.2.</span> <span class="toc-text">用/bin/kill程序发送信号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#从键盘发送信号"><span class="toc-number">4.1.3.</span> <span class="toc-text">从键盘发送信号</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#接收信号"><span class="toc-number">4.2.</span> <span class="toc-text">接收信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#信号处理常见问题"><span class="toc-number">4.3.</span> <span class="toc-text">信号处理常见问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#非本地跳转"><span class="toc-number">5.</span> <span class="toc-text">非本地跳转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#C-和Java中的软件异常"><span class="toc-number">5.1.</span> <span class="toc-text">C++和Java中的软件异常</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"操作系统之进程及异常控制流　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/03/18/操作系统之进程及异常控制流/" data-title="操作系统之进程及异常控制流" data-url="http://bigmingtalk.github.io/2017/03/18/操作系统之进程及异常控制流/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/03/17/简单说说链接器和链接过程/" title="下一篇: 简单说说链接器和链接过程">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/18/操作系统之进程及异常控制流/">操作系统之进程及异常控制流</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/17/简单说说链接器和链接过程/">简单说说链接器和链接过程</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/深入浅出理解高速缓存及多路组相联/">深入浅出理解高速缓存及多路组相联</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/计算机存储层次结构概览/">计算机存储层次结构概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/15/整数与浮点数在计算机中的表示与计算/">整数与浮点数在计算机中的表示与计算</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">Java容器（Java Collection Framework）总览</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
