@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="Intel Core i7是基于Nehalem微体系结构的。Nehalem设计允许完全的64位虚拟和物理地址，但现在的Core i7实现支持48位（256TB）虚拟地址空间和52位（4PB）物理地址空间，还有一个兼容模式，支持32位（4GB）虚拟和物理地址空间。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Intel Core i7/Linux存储器系统概览">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/03/21/Intel-Core-i7-Linux存储器系统概览/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="Intel Core i7是基于Nehalem微体系结构的。Nehalem设计允许完全的64位虚拟和物理地址，但现在的Core i7实现支持48位（256TB）虚拟地址空间和52位（4PB）物理地址空间，还有一个兼容模式，支持32位（4GB）虚拟和物理地址空间。">
+<meta property="og:updated_time" content="2017-03-21T03:14:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Intel Core i7/Linux存储器系统概览">
+<meta name="twitter:description" content="Intel Core i7是基于Nehalem微体系结构的。Nehalem设计允许完全的64位虚拟和物理地址，但现在的Core i7实现支持48位（256TB）虚拟地址空间和52位（4PB）物理地址空间，还有一个兼容模式，支持32位（4GB）虚拟和物理地址空间。">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>Intel Core i7/Linux存储器系统概览 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B*树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B+树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B-树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B树/">B树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DRAM/">DRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JCF/">JCF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/">MMU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ROM/">ROM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SRAM/">SRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/">TLB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分页/">分页</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/划分问题/">划分问题</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多路组相联/">多路组相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/容器/">容器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/寻址/">寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常控制流/">异常控制流</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/整数/">整数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/浮点数/">浮点数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理地址/">物理地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理寻址/">物理寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/直接映射，全相联/">直接映射，全相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/磁盘/">磁盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/符号解析/">符号解析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/索引/">索引</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟地址/">虚拟地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟寻址/">虚拟寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重定位/">重定位</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链接/">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/高速缓存/">高速缓存</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-Intel-Core-i7-Linux存储器系统概览" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/" class="article-date">
+      <time datetime="2017-03-21T01:54:12.000Z" itemprop="datePublished">2017-03-21</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Intel Core i7/Linux存储器系统概览
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/计算机系统/">计算机系统</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/寻址/">寻址</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/物理地址/">物理地址</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/虚拟地址/">虚拟地址</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>Intel Core i7是基于Nehalem微体系结构的。Nehalem设计允许完全的64位虚拟和物理地址，但现在的Core i7实现支持48位（256TB）虚拟地址空间和52位（4PB）物理地址空间，还有一个兼容模式，支持32位（4GB）虚拟和物理地址空间。</p>
+<p><a id="more"></a>&gt;</p>
+<p><img src="" alt="Intel Core i7存储器系统"></p>
+<p>上图给出了Core i7存储器系统的重要部分。处理器包包括四个核、一个大的所有核共享的L3高速缓存，以及一个DDR3存储器控制器。每个核包含一个层次结构的TLB，一个层次结构的数据和指令高速缓存，以及一组快速的点到点连接，这种连接基于Intel QuickPath技术，是为了让一个核与其他核和外部I/O桥直接通信。TLB是虚拟寻址，四路组相联的。L1，L2高速缓存是物理寻址，八路组相联的，L3高速缓存是物理寻址，16路组相联的。块大小（对应于高速缓存一行的大小）是64字节，页大小（对应于主存从磁盘一次加载的数据大小）在启动时被配置为4KB或4MB。Linux使用的是4KB的页。</p>
+<h2 id="Intel-Core-i7地址翻译"><a href="#Intel-Core-i7地址翻译" class="headerlink" title="Intel Core i7地址翻译"></a>Intel Core i7地址翻译</h2><p><img src="" alt="Intel Core i7地址翻译"><br>上图展示了完整的Intel Core i7的翻译过程。从CPU产生虚拟地址的时刻到来自存储器的数据字到达CPU。Core i7采用四级页表层次结构。每个进程可以有它自己私有的页表层次结构。当一个Linux进程正在运行时，虽然Core i7体系结构允许页表换进换出，与已分配了的页相关联的页表都是驻留在存储器中的。CR3控制存储器指向第一级页表的起始位置。CR3是每个进程上下文中的一部分，每次上下文切换时，CR3的值都会被重置。<br><img src="" alt="页表条目"></p>
+<p>上图给出了第一级，第二级，第三极页表条目的格式，它们是相同的。当P=1时（Linux总是如此），地址字段包含一个40位物理页号（PPN），它指向适当的页表的开始处。这里强加了一个隐形要求就是物理页需要4KB对齐，因为只有4KB对齐才能根据要求只用40位物理页号得到页表。<br><img src="" alt="第四级页表条目"></p>
+<p>上图给出了第四级页表中条目的格式（图中页表物理基地址应改为页物理基地址，P位也应该改为子页在物理存储器中(1)，不在(0)）。当P=1时，地址字段包括40位PPN，它指向物理存储器中某一页的基地址。这里同样隐形地强加了一个要求，就是物理页4KB对齐。</p>
+<p>PTE有三个权限位，控制对页的访问。R/W位确定页的内容是可以读写的还是只读的。U/S位确定是否能够在用户模式中访问该页，从而保护操作系统内核中的代码和数据不被用户进程访问。XD(禁止执行)位是在64位系统中引入的，可以用来禁止从某些存储器页取指令，这里通过限制只能执行只读文本段使得操作系统内核降低了缓冲区溢出攻击的风险。</p>
+<p>当MMU翻译每一个虚拟地址时，它还会更新另外两个内核缺页处理程序会用到的位。每次访问一个页时，MMU都会设置A位，称为引用位。内核可以用该位来实现它的页替换算法。每次对一个页进行写之后，MMU都会设置D位，又称脏位，脏位高速内核在拷贝替换页之前是否必须写回牺牲页。内核可以通过一条特殊的内核模式指令来清除引用位或脏位。<br><img src="" alt="页表翻译"></p>
+<p>上图给出了Core i7如何使用四级的页表将虚拟地址翻译成物理地址。36位VPN被划分为四个9位的片，每个片被用作到一个页表偏移量。CR3寄存器包含L1页表的物理地址。VPN1提供一个L1 PTE的偏移量，这个PTE包含L2页表的基地址。VPN 2提供一个L2 PTE的偏移量，以此类推。</p>
+<h3 id="优化地址翻译"><a href="#优化地址翻译" class="headerlink" title="优化地址翻译"></a>优化地址翻译</h3><p>MMU将虚拟地址翻译成物理地址和将物理地址传送到L1高速缓存这两步其实是可以部分重叠进行的，并不是完全的顺序结构。比如页大小为4KB，则虚拟地址有12位的VPO，其与物理地址的PPO的12位相同。因为L1是八路组相联，有64个组以及大小为64字节的缓存块，每个物理地址有6位（2^6=64）缓存偏移以及6位（2^6=64）组索引，而这12位恰好和12位虚拟地址的VPO相同。</p>
+<p>因此，当CPU需要翻译一个虚拟地址时，它发送VPN到MMU，发送VPO到L1高速缓存。当MMU向TLB请求一个页表条目时，L1高速缓存正忙着根据VPO位查找相应的组，并读出这个组里的八位标记和相应的数据字。当MMU从TLB得到PPN时，缓存已经准备好试着把这个PPN与这八个标记中的一个进行匹配了。</p>
+<h2 id="Linux虚拟存储器系统"><a href="#Linux虚拟存储器系统" class="headerlink" title="Linux虚拟存储器系统"></a>Linux虚拟存储器系统</h2><p>虚拟存储器系统要求硬件和内核操作系统之间紧密合作，具体版本之间也会有所差异。这里主要是对Linux的虚拟存储器系统做一个简单的描述，了解一个实际的操作系统是如何组织虚拟存储器的，以及如何处理缺页。<br><img src="" alt="Linux进程的虚拟存储器"></p>
+<p>上图显示了Linux为每个进程维持的一个单独的虚拟地址空间。这里填入了更多的关于内核虚拟存储器的细节，该部分虚拟存储器位于用户栈之上。</p>
+<p>内核虚拟存储器包括内核中的代码和数据结构。内核虚拟存储器的某些区域被映射到所有进程专享的物理页面。比如每个进程共享的内核代码和全局数据结构。另外Linux也将一组连续的虚拟页面（大小等于系统中DRAM的总量）映射到相应的一组连续的物理页面。这位内核提供了一种便利的方法来访问物理存储器（主存）中任何特定的位置，比如当它需要访问页表，或在一些设备上执行存储器映射的I/O操作，而这些设备被映射到特定的物理存储器（主存）位置时。</p>
+<p>内核虚拟存储器其他部分包含每个进程不同的数据，例如页表，内核在进程的上下文中执行代码时使用的栈，以及记录虚拟地址空间当前组织的各种数据结构。</p>
+<h3 id="Linux虚拟存储器区域"><a href="#Linux虚拟存储器区域" class="headerlink" title="Linux虚拟存储器区域"></a>Linux虚拟存储器区域</h3><p>Linux将虚拟存储器组织成一些段（也叫做区域）的集合。每个段就是已经存在着的（已分配的）虚拟存储器的连续片，这些页以某种方式相关联的。代码段、数据段、堆、共享库段，以及用户栈都是不同的区域。每个存在的虚拟页面都保存在某个区域中，而不属于某个区域的虚拟段是不存在的，并且不能被进程引用。区域（段）的概念使得虚拟地址空间有间隙，内核不用记录那些不存在的虚拟页，而这样的页也不占用存储器，磁盘或者内核本身任何资源。<br><img src="" alt="Linux如何组织虚拟存储器"></p>
+<p>上图展示了一个进程中虚拟存储器区域的内核数据结构。内核为系统中每个进程维护一个单独的任务结构（源代码中的task_struct），任务结构中的元素包含或者指向内核运行该进程所需要的所有信息（例如，PID、指向用户栈的指针、可执行目标文件的名字以及程序计数器）。</p>
+<p>task_struct中一个条目指向mm_struct，它描述了虚拟存储器的当前状态，其中pgd指向第一级页表（页全局目录）的基址，而mmap指向一个vm_area_structs（区域结构）的链表，其中每个vm_area_struct都描述了当前虚拟地址空间的一个区域。当内核运行该进程时，它就将pgd存放在CR3控制寄存器中。</p>
+<p>一个具体区域的区域结构包含下面的字段：</p>
+<ul>
+<li>vm_start: 指向该区域的起始处</li>
+<li>vm_end: 指向该区域的结束处</li>
+<li>vm_prot: 描述该区域内包含的所有页的读写许可权限</li>
+<li>vm_flags: 描述该区域内的页面是与其他进程共享的，还是私有的，另外还描述了一些其他信息</li>
+<li>vm_next: 指向链表的下一个区域结构</li>
+</ul>
+<h3 id="Linux缺页异常处理"><a href="#Linux缺页异常处理" class="headerlink" title="Linux缺页异常处理"></a>Linux缺页异常处理</h3><p><img src="" alt="缺页情况"></p>
+<p>上图显示了一个缺页异常可能的情况。当MMU试图翻译某个虚拟地址A时，触发了一个缺页，该异常导致控制转移到内核的缺页处理程序，处理程序执行以下步骤：</p>
+<ol>
+<li>虚拟地址A合法吗？也就是A在某个区域结构中是否有定义，因此缺页处理程序需要搜索区域结构的链表，把A与每个区域结构的vm_start和vm_end做比较。如果不合法，则缺页处理程序触发段错误，从而终止进程。</li>
+<li>试图进行的存储器访问是否合法？也就是说进程是否有读、写或者执行该区域内页面的权限，比如写只读页面或者运行在用户模式的进程试图从内核虚拟存储器中读取字段，则不合法。如果不合法则缺页处理程序会触发一个保护异常，从而终止该进程。</li>
+<li>此时内核知道该缺页时对合法虚拟地址进行合法操作引起的。因此，内核选择一个牺牲页面，如果该牺牲页面被修改过，那么就将它交换出去，换入新的页面并更新页表。当缺页处理程序返回时，CPU重新启动引起缺页的指令，该指令将再次发送A到MMU。这次MMU就能正常地翻译A，而不会产生缺页中断了。</li>
+</ol>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/">Intel Core i7/Linux存储器系统概览</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2017-03-21, 09:54:12</p>
+        <p><span>最后更新:</span>2017-03-21, 11:14:42</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/" title="Intel Core i7/Linux存储器系统概览">http://bigmingtalk.github.io/2017/03/21/Intel-Core-i7-Linux存储器系统概览/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/21/Intel-Core-i7-Linux存储器系统概览/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/03/20/虚拟存储器之物理寻址、虚拟寻址及分页/">
+                    虚拟存储器之物理寻址、虚拟寻址及分页
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Intel-Core-i7地址翻译"><span class="toc-number">1.</span> <span class="toc-text">Intel Core i7地址翻译</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#优化地址翻译"><span class="toc-number">1.1.</span> <span class="toc-text">优化地址翻译</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux虚拟存储器系统"><span class="toc-number">2.</span> <span class="toc-text">Linux虚拟存储器系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux虚拟存储器区域"><span class="toc-number">2.1.</span> <span class="toc-text">Linux虚拟存储器区域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux缺页异常处理"><span class="toc-number">2.2.</span> <span class="toc-text">Linux缺页异常处理</span></a></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"Intel Core i7/Linux存储器系统概览　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/03/21/Intel-Core-i7-Linux存储器系统概览/" data-title="Intel Core i7/Linux存储器系统概览" data-url="http://bigmingtalk.github.io/2017/03/21/Intel-Core-i7-Linux存储器系统概览/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/03/20/虚拟存储器之物理寻址、虚拟寻址及分页/" title="下一篇: 虚拟存储器之物理寻址、虚拟寻址及分页">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/">Intel Core i7/Linux存储器系统概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/20/虚拟存储器之物理寻址、虚拟寻址及分页/">虚拟存储器之物理寻址、虚拟寻址及分页</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/19/数组划分成不含相同元素子数组问题/">数组划分成不含相同元素子数组问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/18/操作系统之进程及异常控制流/">操作系统之进程及异常控制流</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/17/简单说说链接器和链接过程/">简单说说链接器和链接过程</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/深入浅出理解高速缓存及多路组相联/">深入浅出理解高速缓存及多路组相联</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/计算机存储层次结构概览/">计算机存储层次结构概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/15/整数与浮点数在计算机中的表示与计算/">整数与浮点数在计算机中的表示与计算</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">Java容器（Java Collection Framework）总览</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
