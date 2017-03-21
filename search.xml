@@ -4,6 +4,45 @@
   
     
     <entry>
+      <title><![CDATA[浅谈Linux存储器映射]]></title>
+      <url>http://bigmingtalk.github.io/2017/03/21/%E6%B5%85%E8%B0%88Linux%E5%AD%98%E5%82%A8%E5%99%A8%E6%98%A0%E5%B0%84/</url>
+      <content type="html"><![CDATA[<p>Linux通过将一个虚拟存储器区域与一个磁盘上的对象关联起来，以初始化该虚拟存储器的内容，这个过程称为存储器映射。</p>
+<a id="more"></a>
+<p>虚拟存储器区域可以映射到两种类型的对象中的一种：</p>
+<ol>
+<li>Unix文件系统中的普通文件：一个区域可以映射到一个普通磁盘文件的连续部分，例如一个可执行目标文件。文件区被分成页大小的片，每一片包含一个虚拟页面的初始内容。因为按需进行页面调度，因此虚拟页面没有实际交换进入物理存储器，直到CPU第一次引用到页面（即发射一个虚拟地址，落在地址空间这个页面的范围之内）。如果区域比文件区要大，那么就用零来填充该区域剩余部分。</li>
+<li>匿名文件：一个区域也可以映射到一个匿名文件，匿名文件是由内核创建的，包含的全是二进制零。CPU第一次引用该区域内的虚拟页面时，内核就在物理存储器中（主存）找到一个合适的牺牲页面，如果该页面被修改过，就将该页面换出来，用二进制零覆盖牺牲页面并更新页表，将该页面标记为驻留在主存中。这里磁盘和主存之间没有实际的数据传送，因此，映射到匿名文件的区域中的页面也叫做请求二进制零的页。</li>
+</ol>
+<p>无论上述哪种情况，一旦一个虚拟页面被初始化了，它就在一个由内核维护的专门的交换空间（swap space, 在硬盘上）之内换来换去。并且，交换空间限制着当前运行着的进程能够分配的虚拟页面的总数。</p>
+<h2 id="共享对象"><a href="#共享对象" class="headerlink" title="共享对象"></a>共享对象</h2><p>如果虚拟存储器系统尅集成到传统的文件系统中，那么就能提供一种简单而高效的把程序和数据加载到存储器中的方法。许多程序诸如Cku的printf函数等都是可以共享的，如果每个进程都在主存中保存这些拷贝，那么是极端浪费主存空间的。</p>
+<p>一个对象可以被映射到虚拟存储器的一个区域，要么作为共享对象，要么作为私有对象。进程对共享对象的写操作对于其他进程也是可见的，并且这些变化也会反映在磁盘上的原始对象上。而进程对一个映射到私有对象的区域的改变则对于其他进程不可见，并且对该区域所做的写操作不会反映到磁盘上的对象中。共享区域是映射到共享对象的虚拟存储器区域。与之相对应的是私有区域。下图是一个共享对象的示意图：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170321_1.png" alt="共享对象"></p>
+<h3 id="写时拷贝"><a href="#写时拷贝" class="headerlink" title="写时拷贝"></a>写时拷贝</h3><p>私有对象使用写时拷贝技术。一个私有对象开始生命周期和共享对象一样，在物理存储器中（主存）只有私有对象的一份拷贝，如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170321_2.png" alt="私有对象"></p>
+<p>对于每个映射私有对象的进程，相应私有区域的页表条目被标记为只读，并且区域结构被标记为私有的写时拷贝。只要没有进程试图写它自己的私有区域，它们就继续共享主存中的单独拷贝。但是当有一个进程试图写私有区域内的某个页面时，就会触发一个保护故障。而故障处理程序能够知道这是由于进程试图写私有的写时拷贝区域中的一个页面引起的，于是就在主存中创建该页面的一个新拷贝，更新页表条目指向新拷贝，然后恢复该页面的可写权限。</p>
+<p>通过延迟私有对象中的拷贝直到最后可能的时刻，写时拷贝最充分地使用了稀有的主存。</p>
+<h2 id="深入理解fork函数"><a href="#深入理解fork函数" class="headerlink" title="深入理解fork函数"></a>深入理解fork函数</h2><p>当fork函数被当前进程调用时，内核为新进程创建各种数据结构，并分配一个唯一的PID。并且给新进程创建虚拟存储器，创建当前进程的mm_struct，区域结构和页表的原样拷贝。它将两个进程中的每个页面都标记为只读，并将两个进程中的每个区域结构都标记为私有的写时拷贝。</p>
+<p>当fork在新进程中返回时，新进程现在的虚拟存储器刚好和调用fork时存在的虚拟存储器相同。当这两个进程任何一个后来进行写操作时，写时拷贝技术就会创建新页面。</p>
+<h2 id="深入理解execve函数"><a href="#深入理解execve函数" class="headerlink" title="深入理解execve函数"></a>深入理解execve函数</h2><p>假设在当前进程中执行如下调用: execve(“a.out”, NULL, NULL);则execve函数在当前进程中加载并运行包含在可执行目标文件a.out中的程序，用a.out程序有效地替代了当前程序。加载并运行a.out需要以下几步：</p>
+<ul>
+<li>删除已存在的用户区域。删除当前进程虚拟地址的用户部分中已存在的区域结构。</li>
+<li>映射私有区域。为新程序的文本、数据、bss和栈区域创建新的区域结构。所有这些新的区域都是私有的、写时拷贝的。文本和数据区域被映射到a.out文件中的文本和数据区。bss区域是请求二进制零的，映射到匿名文件，其大小包含在a.out中。栈和堆区域也是请求二进制零的，初始长度为零。</li>
+<li>映射共享区域。如果a.out程序与共享对象（或目标）链接，比如标准C库libc.so，那么这些对象都是动态链接到这个程序的，然后再映射到用户虚拟地址空间中的共享区域内。</li>
+<li>设置程序计数器（PC）。设置当前进程上下文中的程序计数器，使之指向文本区域的入口点。下一次调用该进程时，将从该入口点开始执行。Linux根据需要换入代码和数据页面。</li>
+</ul>
+<p>下图展示了私有区域的不同映射。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170321_3.png" alt="加载器映射用户地址空间区域"></p>
+<h2 id="使用mmap函数的用户级存储器映射"><a href="#使用mmap函数的用户级存储器映射" class="headerlink" title="使用mmap函数的用户级存储器映射"></a>使用mmap函数的用户级存储器映射</h2><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170321_7.png" alt="mmap函数"><br>Unix进程可以使用mmap函数来创建新的虚拟存储器区域，并将对象映射到这些区域中。mmap函数要求内核创建一个新的虚拟存储器区域，最好是从地址start开始的一个区域，并将文件描述符fd指定的对象的一个连续的片（chunk）映射到这个新的区域。连续的对象片大小为length字节，从距文件开始处偏移量为offset字节的地址开始。start地址仅仅是一个暗示，通常被定义为NULL。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170321_8.png" alt="mmap参数可视化解释"></p>
+<p>参数prot包含描述新映射的虚拟存储器区域的访问权限位（对于与区域结构中的vm_prot位，参见<a href="http://www.bigming.me/2017/03/21/Intel-Core-i7-Linux%E5%AD%98%E5%82%A8%E5%99%A8%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%A7%88/" target="_blank" rel="external">Linux虚拟存储器区域</a>）：</p>
+<ul>
+<li>PROT_EXEC：这个区域内的页面由可以被CPU执行的指令组成。</li>
+<li>PROT_READ：这个区域内的页面可读。</li>
+<li>PROT_WRITE：这个区域内的页面可写。</li>
+<li>PROT_NONE：这个区域内的页面不能被访问。</li>
+</ul>
+<p>参数flags由描述被映射对象类型的位组成。如果设置了MAP_ANON标记位，那么被映射的对象就是一个匿名对象，而相应的虚拟页面是请求二进制零的。MAP_PRIVATE表示被映射的对象是一个私有的、写时拷贝的对象，而MAP_SHARED表示是一个共享对象。例如, bufp = mmap(-1, size, PROT_READ, MAP_PRIVATE|MAP_ANON, 0, 0)让内核创建一个新的包含size字节的只读、私有、请求二进制零的虚拟存储器区域。若干调用成功，那么bufp包含新区域的地址。</p>
+<h3 id="munmap函数"><a href="#munmap函数" class="headerlink" title="munmap函数"></a>munmap函数</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170321_9.png" alt="munmap函数"><br>munmap函数删除从虚拟地址start开始的，由接下来length自己组成的区域。接下来对已删除区域的引用会导致段错误。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Intel Core i7/Linux存储器系统概览]]></title>
       <url>http://bigmingtalk.github.io/2017/03/21/Intel-Core-i7-Linux%E5%AD%98%E5%82%A8%E5%99%A8%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%A7%88/</url>
       <content type="html"><![CDATA[<p>Intel Core i7是基于Nehalem微体系结构的。Nehalem设计允许完全的64位虚拟和物理地址，但现在的Core i7实现支持48位（256TB）虚拟地址空间和52位（4PB）物理地址空间，还有一个兼容模式，支持32位（4GB）虚拟和物理地址空间。</p>
@@ -1551,14 +1590,14 @@
   
     
     <entry>
-      <title><![CDATA[about]]></title>
-      <url>http://bigmingtalk.github.io/about/index.html</url>
+      <title><![CDATA[404 Not Found：该页无法显示]]></title>
+      <url>http://bigmingtalk.github.io//404.html</url>
       <content type="html"></content>
     </entry>
     
     <entry>
-      <title><![CDATA[404 Not Found：该页无法显示]]></title>
-      <url>http://bigmingtalk.github.io//404.html</url>
+      <title><![CDATA[about]]></title>
+      <url>http://bigmingtalk.github.io/about/index.html</url>
       <content type="html"></content>
     </entry>
     
