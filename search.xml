@@ -4,12 +4,6 @@
   
     
     <entry>
-      <title><![CDATA[啊啊]]></title>
-      <url>http://bigmingtalk.github.io/2017/03/21/%E5%95%8A%E5%95%8A/</url>
-      <content type="html"></content>
-    </entry>
-    
-    <entry>
       <title><![CDATA[Intel Core i7/Linux存储器系统概览]]></title>
       <url>http://bigmingtalk.github.io/2017/03/21/Intel-Core-i7-Linux%E5%AD%98%E5%82%A8%E5%99%A8%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%A7%88/</url>
       <content type="html"><![CDATA[<p>Intel Core i7是基于Nehalem微体系结构的。Nehalem设计允许完全的64位虚拟和物理地址，但现在的Core i7实现支持48位（256TB）虚拟地址空间和52位（4PB）物理地址空间，还有一个兼容模式，支持32位（4GB）虚拟和物理地址空间。</p>
@@ -1557,14 +1551,14 @@
   
     
     <entry>
-      <title><![CDATA[404 Not Found：该页无法显示]]></title>
-      <url>http://bigmingtalk.github.io//404.html</url>
+      <title><![CDATA[about]]></title>
+      <url>http://bigmingtalk.github.io/about/index.html</url>
       <content type="html"></content>
     </entry>
     
     <entry>
-      <title><![CDATA[about]]></title>
-      <url>http://bigmingtalk.github.io/about/index.html</url>
+      <title><![CDATA[404 Not Found：该页无法显示]]></title>
+      <url>http://bigmingtalk.github.io//404.html</url>
       <content type="html"></content>
     </entry>
     
