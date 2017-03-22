@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="除了使用低级的mmap和munmap函数来创建和删除虚拟存储器的区域，还可以使用动态存储器分配器。动态存储器分配器维护着一个进程的虚拟存储器区域，称为堆。堆是一个请求二进制零的区域(参见浅谈Linux存储器映射)，它紧接在未初始化的bss区域后开始，并向上生长（向更高的地址）。对于每个进程，内核维护着一个变量brk(即break)，它指向堆顶。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux动态存储器分配及垃圾回收">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/03/21/Linux动态存储器分配及垃圾回收/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="除了使用低级的mmap和munmap函数来创建和删除虚拟存储器的区域，还可以使用动态存储器分配器。动态存储器分配器维护着一个进程的虚拟存储器区域，称为堆。堆是一个请求二进制零的区域(参见浅谈Linux存储器映射)，它紧接在未初始化的bss区域后开始，并向上生长（向更高的地址）。对于每个进程，内核维护着一个变量brk(即break)，它指向堆顶。">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_10.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_11.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_12.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_13.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_14.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_15.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_16.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_17.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_18.png">
+<meta property="og:updated_time" content="2017-03-22T05:26:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux动态存储器分配及垃圾回收">
+<meta name="twitter:description" content="除了使用低级的mmap和munmap函数来创建和删除虚拟存储器的区域，还可以使用动态存储器分配器。动态存储器分配器维护着一个进程的虚拟存储器区域，称为堆。堆是一个请求二进制零的区域(参见浅谈Linux存储器映射)，它紧接在未初始化的bss区域后开始，并向上生长（向更高的地址）。对于每个进程，内核维护着一个变量brk(即break)，它指向堆顶。">
+<meta name="twitter:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_10.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>Linux动态存储器分配及垃圾回收 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B*树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B+树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B-树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B树/">B树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DRAM/">DRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JCF/">JCF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/">MMU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ROM/">ROM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SRAM/">SRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/">TLB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/free/">free</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/malloc/">malloc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mmap/">mmap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/munmap/">munmap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分页/">分页</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/划分问题/">划分问题</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/垃圾回收/">垃圾回收</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多路组相联/">多路组相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储器映射/">存储器映射</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/容器/">容器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/寻址/">寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常控制流/">异常控制流</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/整数/">整数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/浮点数/">浮点数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理地址/">物理地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理寻址/">物理寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/直接映射，全相联/">直接映射，全相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/磁盘/">磁盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/符号解析/">符号解析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/索引/">索引</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟地址/">虚拟地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟寻址/">虚拟寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重定位/">重定位</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链接/">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/高速缓存/">高速缓存</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-Linux动态存储器分配及垃圾回收" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/03/21/Linux动态存储器分配及垃圾回收/" class="article-date">
+      <time datetime="2017-03-21T08:26:36.000Z" itemprop="datePublished">2017-03-21</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux动态存储器分配及垃圾回收
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/计算机系统/">计算机系统</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/free/">free</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/malloc/">malloc</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/垃圾回收/">垃圾回收</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>除了使用低级的mmap和munmap函数来创建和删除虚拟存储器的区域，还可以使用动态存储器分配器。动态存储器分配器维护着一个进程的虚拟存储器区域，称为堆。堆是一个请求二进制零的区域(参见<a href="http://www.bigming.me/2017/03/21/%E6%B5%85%E8%B0%88Linux%E5%AD%98%E5%82%A8%E5%99%A8%E6%98%A0%E5%B0%84/" target="_blank" rel="external">浅谈Linux存储器映射</a>)，它紧接在未初始化的bss区域后开始，并向上生长（向更高的地址）。对于每个进程，内核维护着一个变量brk(即break)，它指向堆顶。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_10.png" alt="堆"></p>
+<a id="more"></a>
+<p>分配器将堆视为一组不同大小的块的集合来维护。每个块就是一个连续的虚拟存储器片（chunk），要么是已分配的，要么是空闲的。已分配的块显式地保留为供应用程序使用。空闲块可用来分配。分配器有两种，即显示分配器和隐式分配器。</p>
+<ul>
+<li>显式分配器：要求应用显式地释放任何已分配的块。例如，C标准库提供一种叫做malloc程序包的显示分配器。C程序调用malloc函数来分配一个块，并调用free函数来释放一个块。C++的new和delete操作符与C中的malloc和free相似。</li>
+<li>隐式分配器：隐式分配器也叫做垃圾收集器。</li>
+</ul>
+<h2 id="显示分配器"><a href="#显示分配器" class="headerlink" title="显示分配器"></a>显示分配器</h2><h3 id="malloc和free函数"><a href="#malloc和free函数" class="headerlink" title="malloc和free函数"></a>malloc和free函数</h3><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">#include &lt;stdlib.h&gt;</div><div class="line"></div><div class="line">// 返回：若成功则为指针，若出错则为NULL</div><div class="line">void *malloc(size_t size)；</div></pre></td></tr></table></figure>
+<p>malloc函数返回一个指针，指向大小至少size字节的存储器块，该快会为可能包含在这个块内的任何数据对象类型做对齐。比如可能是8字节对齐。如果malloc遇到问题，比如程序要求的存储器块比可用的虚拟存储器还要大，那么它返回NULL，并设置errno。malloc不初始化它返回的存储器。想要已初始化的动态存储器的应用程序应该使用calloc，calloc基于malloc，它将分配的存储器初始化为零。而想要改变一个以前已分配块的大小，可以使用realloc函数。</p>
+<p>另外动态存储器分配器还可以使用sbrk函数，如</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="comment">// 返回：若成功则为旧的brk指针，若出错则为-1</span></div><div class="line"><span class="function"><span class="keyword">void</span> *<span class="title">sbrk</span><span class="params">(<span class="keyword">intptr_t</span> incr)</span></span>;</div></pre></td></tr></table></figure>
+<p>sbrk函数通过将内核的brk指针增加incr来扩展和收缩堆。如果成功，它就返回brk的旧值，否则，它返回-1，并将errno设置为ENOMEM。如果incr为零，那么sbrk久返回brk当前值。用一个负的incr来调用sbrk时合法的，因为返回值（brk的旧值）指向距新堆顶向上abs(incr)字节出。</p>
+<p>free函数释放已分配的堆块。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="comment">// 返回： 无</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(<span class="keyword">void</span> *ptr)</span></span></div></pre></td></tr></table></figure>
+<p>ptr参数必须指向一个从malloc、calloc或者realloc获得的已分配块的其实位置。如果不是，那么free的行为就是未定义的。更糟的是，因为它上面都不返回，所以会出现一些让人迷惑的运行时错误。下图展示了一个malloc核free实现的16字的小堆，每个方框是4字节大小。在c这一步图中应该将p3指针后的6个方框标黑,表示已分配。</p>
+<h3 id="使用动态存储器分配的原因"><a href="#使用动态存储器分配的原因" class="headerlink" title="使用动态存储器分配的原因"></a>使用动态存储器分配的原因</h3><p>使用动态存储器分配的最终要的原因就是坚持到程序实际运行时我们才能够知道某些数据结构的大小。</p>
+<h3 id="动态存储分配器的要求和目标"><a href="#动态存储分配器的要求和目标" class="headerlink" title="动态存储分配器的要求和目标"></a>动态存储分配器的要求和目标</h3><h4 id="要求"><a href="#要求" class="headerlink" title="要求"></a>要求</h4><ul>
+<li>处理任意请求序列：可以任意分配请求和释放请求序列，即每个释放请求必须对应于一个当前已分配块，该块是由一个以前的分配请求获得的。分配器不可以假设分配和释放请求的顺序。</li>
+<li>立即响应请求：分配器必须立即响应分配请求。因此，不允许分配器为了提高效能重新排列或者缓存请求。</li>
+<li>只使用堆：分配器使用的任何非标量数据结构都必须保存在堆里。</li>
+<li>对齐块（对齐要求）：分配器必须对齐块，使得它们可以保存任何类型的数据结构。一般为8字节对齐。</li>
+<li>不修改已分配的块：分配器只能操作或者改变空闲块。特别是一旦块被分配了，就不允许修改或者移动它。因此，诸如压缩已分配块这种技术是不允许使用的。</li>
+</ul>
+<h4 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h4><ul>
+<li>最大化吞吐量：吞吐率定义为每个单位时间里完成的请求数。</li>
+<li>最大化存储器利用率：一个系统中被所有进程分配的虚拟存储器的全部数量是受磁盘上交换空间的数量限制的。尤其是对于可能被要求分配和释放大块存储器的动态存储器分配器。</li>
+</ul>
+<h3 id="碎片"><a href="#碎片" class="headerlink" title="碎片"></a>碎片</h3><p>碎片分为内部碎片和外部碎片：</p>
+<ul>
+<li>内部碎片：由于对齐增加的块大小</li>
+<li>外部碎片：当空闲存储器合计起来足够满足一个分配请求，但是没有一个单独的空闲块足够大可以来处理该请求时发生。</li>
+</ul>
+<h3 id="动态存储器分配器实现需求"><a href="#动态存储器分配器实现需求" class="headerlink" title="动态存储器分配器实现需求"></a>动态存储器分配器实现需求</h3><p>一个实际的的分配器要在吞吐率和利用率之间找到一个平衡点，需要考虑的问题有：</p>
+<ul>
+<li>空闲块组织：即如何记录空闲块</li>
+<li>放置：如何选择一个合适的空闲块来放置一个新分配的块</li>
+<li>分割：在将一个新分配的块放置到某个空闲块之后，如何处理该空闲块中的剩余部分</li>
+<li>合并：如何处理一个刚刚被释放的块</li>
+</ul>
+<h3 id="隐式空闲链表"><a href="#隐式空闲链表" class="headerlink" title="隐式空闲链表"></a>隐式空闲链表</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_11.png" alt="一个简单堆块的格式"><br>一个块是由一个字的头部、有效载荷，以及可能的一些额外的填充组成的，如上图所示。头部编码了该块的大小（包括头部和所有的填充），以及该块是已分配的还是空闲的。如果我们强加一个双字的对齐约束条件，那么快大小就是8的倍数，且块大小的最低三位总是0，于是只需要存储块大小的高29位即可，释放低3位来编码其他信息。此时我们用最低位来表明该块是已分配的还是空闲的。比如一个24（0x18）字节的已分配块的头部是0x00000018 | 0x1 = 0x00000019。类似的，一个40（0x28）字节的空闲块的头部是0x00000028 | 0x0 = 0x00000028。</p>
+<p>头部后面是malloc请求时的有效载荷，有效载荷后面是填充块。填充是分配策略的一部分，用来对付外部碎片，也用来满足对齐要求。一个连续的已分配块和空闲块的额序列如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_12.png" alt="隐式空闲链表"></p>
+<p>隐式空闲链表中空闲块是通过头部中的大小字段隐含地连接着的。分配器可以通过遍历堆中所有块，间接地遍历整个空闲块的集合。这里我们还需要某种特殊标记的结束块，就是已设置分配位而大小为零的终止头部。</p>
+<p>隐式空闲链表简单，但是任何操作的开销都是与堆中已分配块和空闲块的总数呈线性关系。并且系统对齐要求和分配器对块格式的旋转会对分配器上的最小块大小由很强的要求。没有已分配块或者空闲块可以比该最小值还小。例如，我们可以假设一个双字的对齐要求，那么每个块的大小都必须是双字（8字节的倍数）。另外，最小的块也必须是两个字（8字节），一个作为头部，一个字维持对齐要求。即使只祈求单一字节，也需要分配两个字节的块。</p>
+<h4 id="放置已分配的块"><a href="#放置已分配的块" class="headerlink" title="放置已分配的块"></a>放置已分配的块</h4><p>当请求一个k字节的块时，分配器搜索空闲链表，查找一个足够大的放置所有请求的空闲块。常用的放置策略有首次适配、下一次适配和最佳适配。</p>
+<ul>
+<li>首次适配：从头开始第一个适合的空闲块</li>
+<li>下一次适配：不从头开始，从上一次查询结束的地方开始第一次适合的空闲块</li>
+<li>最佳适配：检查每个空闲块，选择适合所需请求大小的最小空闲块</li>
+</ul>
+<p>首次适配简单，但是在靠近链表起始处任意留下碎片，增加了较大块的搜搜时间。下一次适配由Knuth提出，源于的想法是如果我上一次在某个空闲块里面已经发现了一个匹配，那么下一次我们也能在该剩余块中发现匹配。最佳适配的利用率高，但是搜索代价大。</p>
+<h4 id="分割空闲块"><a href="#分割空闲块" class="headerlink" title="分割空闲块"></a>分割空闲块</h4><p>当找到空闲块后，需要将该空闲块分割为两部分，第一部分变为分配块，剩余的变为新的空闲块。</p>
+<h4 id="获取额外的堆存储器"><a href="#获取额外的堆存储器" class="headerlink" title="获取额外的堆存储器"></a>获取额外的堆存储器</h4><p>如果找不到合适的空闲块，那么需要通过合并那些物理上相邻的空闲块来创建一个更大的空闲块。如果这样还不能生成一个足够大的块，或者空闲块以及最大程序合并了，那么分配器通过调用sbrk函数，向内核请求额外的堆存储器。分配器将额外存储器转化我一个大的空闲块，插入到空闲链表中，然后将请求的块放置在该新的链表中。</p>
+<h4 id="合并空闲块"><a href="#合并空闲块" class="headerlink" title="合并空闲块"></a>合并空闲块</h4><p>相邻的空闲块的现象称为假碎片，就是有许多可用的空闲块被切割成小的、无法使用的空闲块。下图中连续的空闲块就是假碎片。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_13.png" alt="假碎片"></p>
+<p>为了解决假碎片问题，需要合并相邻的空闲块，分配器可以选择立即合并或者是推迟合并，也就是等到某个稍晚的时候再合并空闲块。</p>
+<h4 id="带边界标记的合并"><a href="#带边界标记的合并" class="headerlink" title="带边界标记的合并"></a>带边界标记的合并</h4><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_14.png" alt="脚部"><br>当需要合并前面的块是，可以使用Knuth提出的带边界标记的块，也就是在每个块的结尾添加一个脚部，脚部只是每个头部的一个副本（如上图所示）。这样分配器就可以检查脚部，判断前面一个块的起始位置和状态。</p>
+<p>下图展示了合并块的四种情况，即前后分别有无空闲块的两两组合：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_15.png" alt="带边界的合并块"></p>
+<p>带脚部的块增加了存储器开销，因为需要额外的脚部信息，一种优化方法是在已分配块中不再需要脚部。因为只有前面的块是空闲时才会需要脚部，所以如果我们把前面块已分配/空闲位存放在当前块中多出来的低位中，那么已分配块就不需要脚部了。但是空闲块仍然需要脚部。</p>
+<h3 id="显式空闲链表"><a href="#显式空闲链表" class="headerlink" title="显式空闲链表"></a>显式空闲链表</h3><p>隐式空闲链表块分配与堆块的总数呈线性关系，对于通用的分配器隐式空闲链表是不适合的。一种更好的办法是将空闲块组织成双向空闲链表，每个空闲块中，都有一个前驱指针(pred)和一个后继指针（succ）。如下图所示:<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_16.png" alt="双向链表"></p>
+<p>使用双向链表使得首次适配的分配时间从块总数的线性时间减少到了空闲块数量的线性时间。不过，释放一个块的时间可以是线性的，也可以是常数，这取决于我们所选择的空闲链表中块的排序策略。</p>
+<p>排序策略有两种：</p>
+<ul>
+<li>后进先出：将释放的块放置在链表的开始处，则释放一个块在常数时间内完成，如果使用边界标记，合并也可以在常数时间内。</li>
+<li>按照地址顺序维护链表，其中链表中每个块的地址都小于它后继的地址。此时释放一个块需要线性时间的搜索来定位合适的前驱。平衡点在于按照地址排序的首次适配比后进先出的首次适配有更高的存储器利用率，接近最佳适配的利用率。</li>
+</ul>
+<p>显示链表的缺点是空闲块必须足够大，以包含所有需要的指针，以及头部和可能的脚部。这导致了更大的的最小块大小，也潜在的提高了内部碎片的程度。</p>
+<h3 id="分离的空闲链表"><a href="#分离的空闲链表" class="headerlink" title="分离的空闲链表"></a>分离的空闲链表</h3><p>因为单向空闲链表的分配器需要与空闲块数量呈线性关系的时间分配块，减少分配时间的一种方法是分离存储，简单说就是维护多个空闲链表，其中每个链表中的块由大致相等的大小。基本思想是将所有可能的块大小分成一些等价类，也叫做大小类，比如可以按照2的幂来划分块大小。不同的空闲链表有不同的块大小。</p>
+<p>分离存储有很多种实现方式，简单的有两种：简单分离存储和分离适配。</p>
+<p>简单分离是存储每个大小类的空闲链表包含大小相等的块，每个块的大小就是这个大小类中最大元素的大小。缺点是很容易造成内部碎片和外部碎片。</p>
+<p>分离适配维护一个空闲链表的数组，每个空闲链表是和一个大小类相关联的，并且被组织成某种类型的显示或隐式链表。</p>
+<h4 id="伙伴系统"><a href="#伙伴系统" class="headerlink" title="伙伴系统"></a>伙伴系统</h4><p>伙伴系统是分离适配的一种特例，每个大小类都是2的幂。基本的思路是假设一个堆的大小为2^m个字，我们为每个块大小为2^k维护一个分离空闲链表，其中0&lt;=k&lt;=m。请求块大小向上舍入到最接近2的幂。最开始时，只有一个大小为2^m个字的空闲块。为了分配一个大小为2^k的块，我们找到第一个可用的，大小为2^j的块，其中k&lt;=j&lt;=m。如果j=k，那么我们就完成了。否则，我们递归地二分割这个块，知道j=k。当我们进行这样的分割时，每个剩下的半块（也叫做伙伴）被放置在相应的空闲链表中。要释放一个大小为2^k的块，我们继续合并空闲的伙伴。当我们遇到一个已分配的伙伴时，我们就停止合并。</p>
+<p>伙伴系统的有点是给定地址和块的大小，很容易计算它的伙伴地址。例如，一个块大小为32字节，地址为xxx…x00000，它的伙伴地址就是xxx…x10000，也就是说一个块的地址和它的伙伴的地址只有一位不相同。</p>
+<p>伙伴系统分配器的主要优点是它的快速搜索和快速合并。主要缺点是要求块大小为2的幂可能导致显著的内部碎片。因此，伙伴分配器不适合通用目的的工作负载。但是如果某些特定应用的工作负载，其中块大小预先知道2的幂，伙伴系统分配器就很有吸引力。</p>
+<h2 id="垃圾收集"><a href="#垃圾收集" class="headerlink" title="垃圾收集"></a>垃圾收集</h2><p>应用通过调用malloc和free来分配和释放堆块。应用要负责释放所有不再需要的已分配块。未能释放已分配块是很常见的。例如下面的程序:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">garbage</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> *p = (<span class="keyword">int</span> *)<span class="built_in">malloc</span>(<span class="number">15213</span>);</div><div class="line">    <span class="keyword">return</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>因为程序不再需要p，所以在garbage返回前应该释放p。但是由于忘记是的它在程序的生命周期内都保持为已分配状态。</p>
+<p>垃圾收集器是一种动态存储器分配器，它自动释放程序不再需要的已分配块。这些块称为垃圾。自动回收堆存储的过程称为垃圾收集。垃圾收集有很多算法，在这里仅仅讨论最简单的标记清楚算法。关于Java垃圾收集的具体知识我会在未来继续展开。</p>
+<h3 id="垃圾收集基本知识"><a href="#垃圾收集基本知识" class="headerlink" title="垃圾收集基本知识"></a>垃圾收集基本知识</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_17.png" alt="可达图"><br>垃圾收集器将存储器视为一张有向可达图，如上图所示。根节点包括堆中的指针，寄存器，栈里的变量，或者是虚拟存储器中读写数据区域内的全局变量。</p>
+<p>Java的垃圾收集器对应用如何创建和使用指针有很严格的控制，因此能够回收所有垃圾，但是C和C++的收集器不能维持可达图的精确白哦是，因此也称为保守的垃圾收集器。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170322_18.png" alt="保守的垃圾收集器"></p>
+<h3 id="标记清除垃圾收集器"><a href="#标记清除垃圾收集器" class="headerlink" title="标记清除垃圾收集器"></a>标记清除垃圾收集器</h3><p>标记清除垃圾收集器由标记和清楚阶段组成。标记阶段标记处根节点的所有可达的和已分配的后继，而清除阶段释放每个未被标记的已分配块。</p>
+<p>C语言的标记收集器是保守的，其根本原因是C语言不会用类型信息来标记存储器位置。因此，像int或float这样的标量可以伪装成指针。因此，假设某个可达的已分配块在它的有效载荷中包含一个int，其值碰巧对应于某个其他已分配块b的有效载荷中的一个地址。对收集器而言，是没有办法推断出这个数据实际上是int而不是指针的。因此，分配器必须保守地将b标记为可达，尽管事实上它可能是不可达的。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/03/21/Linux动态存储器分配及垃圾回收/">Linux动态存储器分配及垃圾回收</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2017-03-21, 16:26:36</p>
+        <p><span>最后更新:</span>2017-03-22, 13:26:58</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/03/21/Linux动态存储器分配及垃圾回收/" title="Linux动态存储器分配及垃圾回收">http://bigmingtalk.github.io/2017/03/21/Linux动态存储器分配及垃圾回收/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/21/Linux动态存储器分配及垃圾回收/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/03/21/浅谈Linux存储器映射/">
+                    浅谈Linux存储器映射
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#显示分配器"><span class="toc-number">1.</span> <span class="toc-text">显示分配器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc和free函数"><span class="toc-number">1.1.</span> <span class="toc-text">malloc和free函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用动态存储器分配的原因"><span class="toc-number">1.2.</span> <span class="toc-text">使用动态存储器分配的原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态存储分配器的要求和目标"><span class="toc-number">1.3.</span> <span class="toc-text">动态存储分配器的要求和目标</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#要求"><span class="toc-number">1.3.1.</span> <span class="toc-text">要求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#目标"><span class="toc-number">1.3.2.</span> <span class="toc-text">目标</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#碎片"><span class="toc-number">1.4.</span> <span class="toc-text">碎片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态存储器分配器实现需求"><span class="toc-number">1.5.</span> <span class="toc-text">动态存储器分配器实现需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#隐式空闲链表"><span class="toc-number">1.6.</span> <span class="toc-text">隐式空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#放置已分配的块"><span class="toc-number">1.6.1.</span> <span class="toc-text">放置已分配的块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#分割空闲块"><span class="toc-number">1.6.2.</span> <span class="toc-text">分割空闲块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#获取额外的堆存储器"><span class="toc-number">1.6.3.</span> <span class="toc-text">获取额外的堆存储器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#合并空闲块"><span class="toc-number">1.6.4.</span> <span class="toc-text">合并空闲块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#带边界标记的合并"><span class="toc-number">1.6.5.</span> <span class="toc-text">带边界标记的合并</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#显式空闲链表"><span class="toc-number">1.7.</span> <span class="toc-text">显式空闲链表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#分离的空闲链表"><span class="toc-number">1.8.</span> <span class="toc-text">分离的空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#伙伴系统"><span class="toc-number">1.8.1.</span> <span class="toc-text">伙伴系统</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#垃圾收集"><span class="toc-number">2.</span> <span class="toc-text">垃圾收集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#垃圾收集基本知识"><span class="toc-number">2.1.</span> <span class="toc-text">垃圾收集基本知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#标记清除垃圾收集器"><span class="toc-number">2.2.</span> <span class="toc-text">标记清除垃圾收集器</span></a></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"Linux动态存储器分配及垃圾回收　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/03/21/Linux动态存储器分配及垃圾回收/" data-title="Linux动态存储器分配及垃圾回收" data-url="http://bigmingtalk.github.io/2017/03/21/Linux动态存储器分配及垃圾回收/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/03/21/浅谈Linux存储器映射/" title="下一篇: 浅谈Linux存储器映射">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Linux动态存储器分配及垃圾回收/">Linux动态存储器分配及垃圾回收</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/浅谈Linux存储器映射/">浅谈Linux存储器映射</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/">Intel Core i7/Linux存储器系统概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/20/虚拟存储器之物理寻址、虚拟寻址及分页/">虚拟存储器之物理寻址、虚拟寻址及分页</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/19/数组划分成不含相同元素子数组问题/">数组划分成不含相同元素子数组问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/18/操作系统之进程及异常控制流/">操作系统之进程及异常控制流</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/17/简单说说链接器和链接过程/">简单说说链接器和链接过程</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/深入浅出理解高速缓存及多路组相联/">深入浅出理解高速缓存及多路组相联</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/计算机存储层次结构概览/">计算机存储层次结构概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/15/整数与浮点数在计算机中的表示与计算/">整数与浮点数在计算机中的表示与计算</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">Java容器（Java Collection Framework）总览</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
