@@ -29,7 +29,7 @@
 <meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_24.png">
 <meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_25.png">
 <meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_26.png">
-<meta property="og:updated_time" content="2017-03-23T03:23:27.000Z">
+<meta property="og:updated_time" content="2017-03-23T03:28:26.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Unix共享文件原理及系统级I/O">
 <meta name="twitter:description" content="I/O（输入/输出）是指在主存和外部设备（磁盘驱动器、终端和网络）之间拷贝数据的过程。所有的I/O设备都被模型化为文件，一个Unix文件就是一个m个字节序列，而所有输入输出都被当做对相应文件的读和写来执行。将设备映射为文件，允许Unix内核将所有输入和输出都能以一种统一且一致的方式来执行。">
@@ -376,7 +376,7 @@
 <h2 id="标准I-O"><a href="#标准I-O" class="headerlink" title="标准I/O"></a>标准I/O</h2><p>ANSI C定义了一组高级输入输出函数，称为标准I/O库，该库（libc）提供了关闭和打开文件的函数（fopen和fclose）、读和写字节的函数（fread和fwrite）、读和写字符串的函数（fgets和fputs），以及复杂的格式化的I/O函数（scanf和printf）。</p>
 <p>标准I/O库将一个打开的文件模型化为一个流。一个流就是一个指向FILE类型的结构的指针。每个ANSI C程序开始时都有三个打开的流stdin、stdout和stderr，分别对应标准输入、标准输出和标准错误。</p>
 <p>Unix I/O、标准I/O和RIO之间的关系如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_26.png" alt="Unix I/O"></p>
-<p>一般来说，在网络套接字上不要使用标准I/O函数来进行输入输出，而要使用健壮的RIO函数。而标准I/O函数是磁盘和终端设备I/O（除了网络套接字）之选。</p>
+<p>对于大多数应用程序来说，标准I/O更简单，是优于Unix I/O的选择。然而，因为对标准I/O和网络文件的一些相互不兼容的限制，使得Unix I/O比标准I/O更适用于网络应用程序。而RIO包则是针对读和写操作会出现不足值的情况通过反复读写操作，直到传送完所有的请求数据，自动处理不足值。</p>
 
       
     </div>
@@ -388,7 +388,7 @@
         <p><span>本文标题:</span><a href="/2017/03/23/Unix共享文件原理及系统级I-O/">Unix共享文件原理及系统级I/O</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
         <p><span>发布时间:</span>2017-03-23, 10:01:58</p>
-        <p><span>最后更新:</span>2017-03-23, 11:23:27</p>
+        <p><span>最后更新:</span>2017-03-23, 11:28:26</p>
         <p>
             <span>原始链接:</span><a class="post-url" href="/2017/03/23/Unix共享文件原理及系统级I-O/" title="Unix共享文件原理及系统级I/O">http://bigmingtalk.github.io/2017/03/23/Unix共享文件原理及系统级I-O/</a>
             <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/23/Unix共享文件原理及系统级I-O/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
