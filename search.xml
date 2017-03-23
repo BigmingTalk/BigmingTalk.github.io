@@ -4,6 +4,80 @@
   
     
     <entry>
+      <title><![CDATA[Unix共享文件原理及系统级I/O]]></title>
+      <url>http://bigmingtalk.github.io/2017/03/23/Unix%E5%85%B1%E4%BA%AB%E6%96%87%E4%BB%B6%E5%8E%9F%E7%90%86%E5%8F%8A%E7%B3%BB%E7%BB%9F%E7%BA%A7I-O/</url>
+      <content type="html"><![CDATA[<p>I/O（输入/输出）是指在主存和外部设备（磁盘驱动器、终端和网络）之间拷贝数据的过程。所有的I/O设备都被模型化为文件，一个Unix文件就是一个m个字节序列，而所有输入输出都被当做对相应文件的读和写来执行。将设备映射为文件，允许Unix内核将所有输入和输出都能以一种统一且一致的方式来执行。</p>
+<a id="more"></a>
+<h2 id="Unix-I-O"><a href="#Unix-I-O" class="headerlink" title="Unix I/O"></a>Unix I/O</h2><p>常见的输入输出包括：</p>
+<ul>
+<li>打开文件：应用程序通过要求内核打开相应文件，来访问一个I/O设备。内核返回一个小的非负整数，叫做描述符，它在后续对此文件的所有操作中标识该文件。内核记录有关该打开文件的所有信息，而应用程序只需记住该描述符。Unix外壳为每个进程开始时都有三个打开文件：标准输入（描述符为0, STDIN_FILENO)标准输出（描述符为1, STDOUT_FILENO）和标准错误（描述符为2, STDERR_FILENO）。</li>
+<li>改变当前的文件位置：对于每个打开文件，内核保持一个文件位置k，初始为0，文件位置是从文件开始起始的字节偏移量。应用程序可以通过执行seek操作，显示地设置文件的当前位置为k。</li>
+<li>读写文件：一个读操作就是从文件拷贝n&gt;0个字节到主存，从当前文件位置k开始，然后将k增加到k+n。给定一个大小为m字节的文件，当k&gt;m时执行读操作会触发EOF（end-of-file）条件。文件结尾处没有明确的“EOF符号”。类似的写操作就是从主存拷贝n&gt;0个字节到一个文件，从当前文件位置k开始，然后更新k。</li>
+<li>关闭文件：当应用完成了对文件的访问之后，就通知内核关闭该文件。作为响应，内核释放文件打开时创建的数据结构，并将该描述符恢复到可用的描述符池中。无路一个进程为何终止，内核都会关闭所有打开的文件并释放它们的存储器资源。</li>
+</ul>
+<h3 id="系统级I-O函数"><a href="#系统级I-O函数" class="headerlink" title="系统级I/O函数"></a>系统级I/O函数</h3><h4 id="open函数和close函数"><a href="#open函数和close函数" class="headerlink" title="open函数和close函数"></a>open函数和close函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta"># <span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></div><div class="line"><span class="meta"># <span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="comment">// 返回：若成功则为新文件描述符，若出错为-1</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">char</span> * filename, <span class="keyword">int</span> flags, <span class="keyword">mode_t</span> mode)</span></span>;</div></pre></td></tr></table></figure>
+<p>open函数将filename转换为一个文件描述符，返回的描述符总是在进程中当前没有打开的最小描述符。</p>
+<p>flags参数：</p>
+<ul>
+<li>O_RDONLY：只读</li>
+<li>O_WRONLY：只写</li>
+<li>O_RDWR：可读可写</li>
+</ul>
+<p>此外，flags参数也可以是一个或者更多位掩码的或，为写提供给一些额外的指示：</p>
+<ul>
+<li>O_CREAT：如果文件不存在，则创建一个空文件</li>
+<li>O_TRUNC：如果文件存在，就截断它</li>
+<li>O_APPEND：每次写操作前，设置文件位置到文件的结尾处</li>
+</ul>
+<p>例如<code>fd = open(&quot;bigming.txt&quot;, O_WRONLY|O_APPEND, 0)</code>指定在文件后面添加数据。</p>
+<p>mode参数：<br>指定新文件的访问权限位，这些位的名字如下图所示:<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_19.png" alt="访问权限位"></p>
+<p>在每个进程的上下文中，都有一个umask，它是通过调用umask函数来设置的。当进程通过某个mode参数的open函数调用来创建一个新文件时，文件的访问权限位被设置为mode &amp; ~umask。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="comment">// 返回：若成功则为0，若出错则为-1</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">close</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</div></pre></td></tr></table></figure>
+<p>关闭一个已关闭的描述符会出错。</p>
+<h4 id="read函数和write函数"><a href="#read函数和write函数" class="headerlink" title="read函数和write函数"></a>read函数和write函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="comment">// 返回：若成功则为读的字节数，若EOF则为0，若出错则为-1</span></div><div class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> n);</div><div class="line"></div><div class="line"><span class="comment">// 返回：若成功则为写的字节数，若出错则为-1</span></div><div class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> n);</div></pre></td></tr></table></figure>
+<p>这里ssize_t是是有符号的int，而size_t是无符号的unsigned int。一个返回一个-1是的read最大值减少了一半，从4GB到2GB。</p>
+<p>某些情况下，read和write传送的字节比应用程序要求的少，这些不足值表示有错误：</p>
+<ul>
+<li>读时遇到EOF</li>
+<li>从终端读文本行：如果打开文件是终端相关联的（如键盘和显示器），那么每个read函数将一次传送一个文本行，返回的不足值等于文本行的大小。</li>
+<li>读和写网络套接字（socket）：如果打开的文件对应于网络套接字，那么内部缓冲约束和较长的网络延迟会引起read和write返回不足值。对Unix管道调用read和write时，也有可能出现不足值。</li>
+</ul>
+<p>实际上，除了EOF，在读和写磁盘文件时，不会遇到不足值。但是当处理网络套接字时，需要反复调用read和write函数来处理不足值，知道所有需要的字节都传送完毕。</p>
+<h4 id="RIO包"><a href="#RIO包" class="headerlink" title="RIO包"></a>RIO包</h4><p>RIO包是一个自动为你处理不足值的I/O包，它建立在系统级I/O包之上。RIO包提供了两种不同类型的函数：</p>
+<ul>
+<li>无缓冲的输入输出函数：直接在存储器和文件之间传送数据，没有应用级缓存，它们对二进制数据读写到网络和从网络读写二进制数据尤其有用。</li>
+<li>带缓冲的输入函数：允许从文件中读取文本行和二进制数据，这些文件内容缓存在应用级缓冲区中，类似于printf这样的标准I/O函数提供的缓冲区。带缓冲的RIO输入函数是线程安全的。</li>
+</ul>
+<h2 id="共享文件机制"><a href="#共享文件机制" class="headerlink" title="共享文件机制"></a>共享文件机制</h2><h3 id="读取文件元数据"><a href="#读取文件元数据" class="headerlink" title="读取文件元数据"></a>读取文件元数据</h3><p>应用程序通过调用stat和fstat函数，检索到关于文件的信息（也称为文件的元数据(metadata)）。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="comment">// 返回：若成功则为0，若出错则为-1</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">stat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *filename, <span class="keyword">struct</span> stat *buf)</span></span>;</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">fstat</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">struct</span> stat *buf)</span></span>;</div></pre></td></tr></table></figure>
+<p>stat函数以一个文件名作为输入，并填写下图所示的一个stat数据结构中的各个成员。fstat与stat相似，不过是以文件描述符而不是文件名为输入。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_20.png" alt="stat结构"></p>
+<p>st_size成员包含了文件的字节数大小，st_mode成员则编码了文件访问许可位和文件类型。Unix识别大量不同的文件类型，普通文件包括某种类型的二进制或文本数据。对于内核而言，文件文件和二进制文件毫无区别。目录文件包含关于其他文件的信息。套接字是一种用来通过网络与其他进程通信的文件。Unix通过宏指令根据st_mode成员来确定文件的类型。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_21.png" alt="宏指令"></p>
+<h3 id="共享文件"><a href="#共享文件" class="headerlink" title="共享文件"></a>共享文件</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_22.png" alt="典型的打开文件的内核数据结构"><br>除非你很清楚内核是如何表示打开的文件的，否则文件共享的概念非常难懂。内核用三个相关的数据结构来表示打开的文件。</p>
+<ul>
+<li>描述符表：每个进程都有它独立的描述符表，它的表项是由进程打开的文件描述符来索引的。每个打开的描述符表项指向文件表中的一个表项。</li>
+<li>文件表：打开文件的集合🈶一张文件表来表示的，所有的进程共享这张表。每个文件表的表项组成包括当前的文件位置、引用计数（即当前指向该表项的描述符表项数）、以及一个指向v-node表中对应表项的指针。关闭一个描述表会减少相应的文件表项中的引用计数。内核不会删除这个文件表表项，直到它的引用计数为零。</li>
+<li>v-node表：桶文件表一样，所有的进程共享这张v-node表。每个表项包含stat结构中的大多数信息，包括st_mode和st_size。</li>
+</ul>
+<p>上图中展示的是描述符1和4通过不同的打开文件表表项来引用两个不同的文件，这是没有共享文件，并且每个描述符对应一个不同的文件。后面的相关操作都是在该基础上进行的。</p>
+<p>多个描述符也可以通过不同的文件表表项来引用同一个文件。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_23.png" alt="文件共享"></p>
+<p>这里如果以同一个filename调用open函数两次，就会发生上图这种情况。这里之所以可能会有两张文件表是因为每个描述符都有它自己的文件位置，所以对不同描述符的读操作可以从文件的不同位置获取数据。</p>
+<p>而针对父子进程共享文件，则是fork函数之后子进程有一个父进程描述表的副本，父子进程共享相同的打开文件表集合，因此共享相同的文件位置。并且在内核删除相应的文件表表项之前，父子进程必须都关闭它们的描述符表。如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_24.png" alt="fork文件共享"></p>
+<h2 id="I-O重定向"><a href="#I-O重定向" class="headerlink" title="I/O重定向"></a>I/O重定向</h2><p>Unix外壳提供了I/O重定向操作符，如:</p>
+<blockquote>
+<p>unix > ls &gt; bigming.txt</p>
+</blockquote>
+<p>使得外壳加载和执行ls程序，将标准输出重定向到磁盘文件bigming.txt。I/O重定向使用dup2函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="comment">// 返回：若成功则为非负的描述符，若出错则为-1。</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup2</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd)</span></span>;</div></pre></td></tr></table></figure>
+<p>dup2函数拷贝描述符表项oldfd到描述符表项newfd，覆盖newfd以前的内容。如dup2(4, 1)之后如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_25.png" alt="dup2"></p>
+<p>这里因为打开文件表中文件A的引用计数为0，所以被删除了，与之对应的v-node表项也因为没有文件表项指向它被删除了。而打开文件表中文件B的引用计数变为了2。</p>
+<h2 id="标准I-O"><a href="#标准I-O" class="headerlink" title="标准I/O"></a>标准I/O</h2><p>ANSI C定义了一组高级输入输出函数，称为标准I/O库，该库（libc）提供了关闭和打开文件的函数（fopen和fclose）、读和写字节的函数（fread和fwrite）、读和写字符串的函数（fgets和fputs），以及复杂的格式化的I/O函数（scanf和printf）。</p>
+<p>标准I/O库将一个打开的文件模型化为一个流。一个流就是一个指向FILE类型的结构的指针。每个ANSI C程序开始时都有三个打开的流stdin、stdout和stderr，分别对应标准输入、标准输出和标准错误。</p>
+<p>Unix I/O、标准I/O和RIO之间的关系如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170323_26.png" alt="Unix I/O"></p>
+<p>一般来说，在网络套接字上不要使用标准I/O函数来进行输入输出，而要使用健壮的RIO函数。而标准I/O函数是磁盘和终端设备I/O（除了网络套接字）之选。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[C语言常见的存储器相关错误总结]]></title>
       <url>http://bigmingtalk.github.io/2017/03/22/C%E8%AF%AD%E8%A8%80%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AD%98%E5%82%A8%E5%99%A8%E7%9B%B8%E5%85%B3%E9%94%99%E8%AF%AF%E6%80%BB%E7%BB%93/</url>
       <content type="html"><![CDATA[<p>对于C语言，一个非常困难且容易出错的地方是管理和使用虚拟存储器。错误经常是在于错误源距离一段时间和空间的地方表现出来，使得查错也是一个相当头疼的事情。本文总结了程序员常常会犯的几种错误，以供参考。</p>
@@ -617,7 +691,7 @@
 <li>非写分配：避开高速缓存，直接把该字写到低一层中。</li>
 </ul>
 <p>通常而言，直写高速缓存通常是非写分配的，写回高速缓存是写分配的。通常，由于较长的传送时间，存储器层次结构中较低层的缓存更可能使用写回，而不是直写。例如，虚拟存储器系统（用主存作为存储在磁盘上的块的缓存）只使用写回。</p>
-<h2 id="Intel-COre-i7的高速缓存层次结构"><a href="#Intel-COre-i7的高速缓存层次结构" class="headerlink" title="Intel COre i7的高速缓存层次结构"></a>Intel COre i7的高速缓存层次结构</h2><p>实际上，高速缓存既保存数据，也保存指令，将它们分开为独立的高速缓存有很多好处，因为通常指令是只读的。分开的高速缓存可以有不同的块大小，相联度和容量。Intel Core i7的高速缓存层次结构如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170316_58.png" alt="Intel COre i7"></p>
+<h2 id="Intel-Core-i7的高速缓存层次结构"><a href="#Intel-Core-i7的高速缓存层次结构" class="headerlink" title="Intel Core i7的高速缓存层次结构"></a>Intel Core i7的高速缓存层次结构</h2><p>实际上，高速缓存既保存数据，也保存指令，将它们分开为独立的高速缓存有很多好处，因为通常指令是只读的。分开的高速缓存可以有不同的块大小，相联度和容量。Intel Core i7的高速缓存层次结构如下图所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170316_58.png" alt="Intel COre i7"></p>
 <h2 id="高速缓存参数的性能影响"><a href="#高速缓存参数的性能影响" class="headerlink" title="高速缓存参数的性能影响"></a>高速缓存参数的性能影响</h2><p>有很多指标来衡量高速缓存的性能：</p>
 <ul>
 <li>不命中率</li>
