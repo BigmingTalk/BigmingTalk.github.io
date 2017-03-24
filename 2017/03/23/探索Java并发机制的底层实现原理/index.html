@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="Java代码编译为Java字节码后，被类加载器加载到Java虚拟机（JVM）执行，JVM执行字节码最终需要转化为汇编指令在CPU上执行。Java的并发机制依赖于具体的JVM实现以及CPU指令。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="探索Java并发机制的底层实现原理">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/03/23/探索Java并发机制的底层实现原理/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="Java代码编译为Java字节码后，被类加载器加载到Java虚拟机（JVM）执行，JVM执行字节码最终需要转化为汇编指令在CPU上执行。Java的并发机制依赖于具体的JVM实现以及CPU指令。">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_2.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_3.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_5.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_6.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_8.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_9.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_10.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_11.png">
+<meta property="og:updated_time" content="2017-03-24T05:00:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="探索Java并发机制的底层实现原理">
+<meta name="twitter:description" content="Java代码编译为Java字节码后，被类加载器加载到Java虚拟机（JVM）执行，JVM执行字节码最终需要转化为汇编指令在CPU上执行。Java的并发机制依赖于具体的JVM实现以及CPU指令。">
+<meta name="twitter:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_2.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>探索Java并发机制的底层实现原理 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B*树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B+树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B-树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B树/">B树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C语言/">C语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DRAM/">DRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IO/">IO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JCF/">JCF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/">MMU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mark-Word/">Mark Word</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ROM/">ROM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SRAM/">SRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/">TLB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/free/">free</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/malloc/">malloc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mmap/">mmap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/munmap/">munmap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/synchronized/">synchronized</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/v-node表/">v-node表</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/volatile/">volatile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享文件/">共享文件</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分页/">分页</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/划分问题/">划分问题</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/垃圾回收/">垃圾回收</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多路组相联/">多路组相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储器映射/">存储器映射</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/容器/">容器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/寻址/">寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常控制流/">异常控制流</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/指针/">指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/整数/">整数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/浮点数/">浮点数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理地址/">物理地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理寻址/">物理寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/直接映射，全相联/">直接映射，全相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/磁盘/">磁盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/符号解析/">符号解析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/索引/">索引</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟地址/">虚拟地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟寻址/">虚拟寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重定位/">重定位</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链接/">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误/">错误</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/高速缓存/">高速缓存</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-探索Java并发机制的底层实现原理" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/03/23/探索Java并发机制的底层实现原理/" class="article-date">
+      <time datetime="2017-03-23T06:21:00.000Z" itemprop="datePublished">2017-03-23</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      探索Java并发机制的底层实现原理
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/Java/">Java</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mark-Word/">Mark Word</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/synchronized/">synchronized</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/volatile/">volatile</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/并发/">并发</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p>Java代码编译为Java字节码后，被类加载器加载到Java虚拟机（JVM）执行，JVM执行字节码最终需要转化为汇编指令在CPU上执行。Java的并发机制依赖于具体的JVM实现以及CPU指令。</p>
+<a id="more"></a>
+<h2 id="并发编程的挑战"><a href="#并发编程的挑战" class="headerlink" title="并发编程的挑战"></a>并发编程的挑战</h2><p>在具体探索Java并发机制的底层实现前，我们需要了解在编写并发程序过程中主要面临的挑战是什么，也就是我们需要解决的问题有哪些。我们之所以要进行并发编程，目的就是让程序运行地更加快。但是，这并不代表着启动更多的线程就能让程序最大程序地并行执行起来。</p>
+<p>进行并行编程面临的主要问题有上下文切换问题、死锁问题、以及受限于硬件和软件资源限制的问题。</p>
+<h3 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h3><p>关于上下文切换我在<a href="http://www.bigming.me/2017/03/18/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%B9%8B%E8%BF%9B%E7%A8%8B%E5%8F%8A%E5%BC%82%E5%B8%B8%E6%8E%A7%E5%88%B6%E6%B5%81/#上下文切换" target="_blank" rel="external">操作系统之进程及异常控制流</a>一文中有所提及。CPU（即使是单核处理器）是通过给每个线程分配各个线程的时间片（通常是几十毫秒），并且不停地切换线程执行来让我们感觉多个线程同时执行的。</p>
+<p>CPU在切换线程时会保存当前线程的状态（比如通用目的寄存器、浮点寄存器、程序计数器、用户栈、状态寄存器、内核栈和各种内核数据结构），以便下次返回该线程时可以再加载该任务的状态。上下文切换是需要时间的，频繁的切换回消耗大量的时间，如果上下文切换的时间都大于并行所节约的时间，那么并行的意义也就不大了。</p>
+<h4 id="减少上下文切换的方法"><a href="#减少上下文切换的方法" class="headerlink" title="减少上下文切换的方法"></a>减少上下文切换的方法</h4><ul>
+<li>无锁并发编程：多线程竞争锁时，会引发上下文切换，可以通过有一些并发来避免使用锁，比如将数据ID按照Hash算法取模分段，不同线程处理不同段的数据等。</li>
+<li>CAS算法：Java的Atomic包使用CAS算法来更新数据而不需要加锁。会在后面详细展开。</li>
+<li>使用最少线程：避免创建不需要的线程，任务很少但创建很多线程会造成大量线程都处于等待状态。</li>
+<li>协程：在单线程里实现多任务的调度，并在单线程里维持多个任务间的切换。关于协程的介绍大家可以参见<a href="https://zh.wikipedia.org/wiki/%E5%8D%8F%E7%A8%8B" target="_blank" rel="external">维基百科条目</a>。</li>
+</ul>
+<h3 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h3><p>产生死锁的四个必要条件是：</p>
+<ul>
+<li>互斥条件：一个资源每次只能被一个进程使用。</li>
+<li>请求与保持条件：一个进程因请求资源而阻塞时，对已获得的资源保持不放。</li>
+<li>不剥夺条件：进程已获得的资源，在末使用完之前，不能强行剥夺。</li>
+<li>循环等待条件：若干进程之间形成一种头尾相接的循环等待资源关系。</li>
+</ul>
+<p>下面是一个死锁的例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> concurrency.bigming;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 2017/3/23.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DeadLockDemo</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String A = <span class="string">"A"</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String B = <span class="string">"B"</span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        <span class="keyword">new</span> DeadLockDemo().deadLock();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">deadLock</span><span class="params">()</span> </span>&#123;</div><div class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">synchronized</span> (A) &#123;</div><div class="line">                    <span class="keyword">try</span> &#123;</div><div class="line">                        Thread.currentThread().sleep(<span class="number">2000</span>);</div><div class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                        e.printStackTrace();</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">synchronized</span> (B) &#123;</div><div class="line">                        System.out.println(<span class="string">"Thread 1"</span>);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">synchronized</span> (B) &#123;</div><div class="line">                    <span class="keyword">try</span> &#123;</div><div class="line">                        Thread.currentThread().sleep(<span class="number">2000</span>);</div><div class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                        e.printStackTrace();</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">synchronized</span> (A) &#123;</div><div class="line">                        System.out.println(<span class="string">"Thread 2"</span>);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        t1.start();</div><div class="line">        t2.start();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这个例子中t1拿到A的锁之后，t2拿到了B的锁，然后t1请求B的锁，t2请求A的锁，从而形成死锁。</p>
+<p>这个例子只是一个示例，在实际编码中也许t1拿到锁之后，因为一些异常情况没有释放锁，又或者是t1拿到一个数据库锁，之后释放锁的时候抛出异常，没释放掉。</p>
+<p>通常避免死锁的几种常见方法有：</p>
+<ul>
+<li>避免一个线程同时获取几个锁</li>
+<li>避免一个线程在锁内同时占用多个资源，尽量保证每个锁只占用一个资源</li>
+<li>尝试使用定时锁，使用lock.tryLock(timeout)来替代使用内部所机制</li>
+<li>对于数据库锁，加锁和解锁必须在一个数据库连接里，否则会出现解锁失败的情况</li>
+</ul>
+<h3 id="资源限制"><a href="#资源限制" class="headerlink" title="资源限制"></a>资源限制</h3><p>资源限制指的是并发编程时程序的执行速度受限于计算机硬件资源或软件资源。比如服务器带宽只有2Mb/s，某个资源下载速度是1Mb/s，系统启动10个线程下载下载速度也不会编程10Mb/s。</p>
+<p>并发编程中代码执行速度加快是因为将代码中原来的串行执行的部分变成并行执行，但是如果因为受限于资源，仍然串行执行，那么不仅不会加快，反而会比那么，因为并行增加了上下文切换和资源调度的时间。</p>
+<p>对于硬件的资源限制，使用集群并行执行程序可以缩短执行时间，比如Hadoop搭建的服务器集群，不同机器处理不同的数据。而对于软件资源限制，可以考虑使用资源池复用，比如连接池将数据库和socket连接复用，或者在调用对方webservice接口获取数据时，只建立一个连接。</p>
+<p>在资源有限的条件下，若想加快执行速度，那么可以根据不同的资源限制调整程序的并发度，比如下载文件程序依赖于两个资源——带宽和硬盘读写速度。有数据库操作，设计到数据库的连接数，如果SQL执行很快，并且线程的数量远远大于数据库连接数，那么很多线程会被阻塞，等待数据库连接。</p>
+<h2 id="volatile的应用"><a href="#volatile的应用" class="headerlink" title="volatile的应用"></a>volatile的应用</h2><p>在Java多线程编程中最常见的就是synchronized和volatile。volatile是轻量级的synchronized，保证共享变量的“可见性”。这里所谓的可见性是指当一个线程修改一个共享变量时，另外一个线程能够读到这个修改的值。volatile使用恰当的话比synchronized成本更低，因为不需要线程上下文切换和调度。</p>
+<h3 id="volatile定义与实现原理"><a href="#volatile定义与实现原理" class="headerlink" title="volatile定义与实现原理"></a>volatile定义与实现原理</h3><p>Java语言规范第3版中对volatile的定义如下：</p>
+<blockquote>
+<p>Java编程语言允许线程访问共享变量，为了确保共享变量能被准确和一致地更新，线程应该确保通过排他锁单独获得这个变量。</p>
+</blockquote>
+<p>如果一个字段被声明为volatile，Java线程内存模型确保所有线程看到的这个变量的值是一致的。在了解volatile的实现原理之前，有一些CPU术语需要了解，这些术语主要涉及对缓存的理解，具体可以参见我的几篇博客<a href="http://www.bigming.me/2017/03/16/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AD%98%E5%82%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E6%A6%82%E8%A7%88/" target="_blank" rel="external">计算机存储层次结构概览</a>，<a href="http://www.bigming.me/2017/03/16/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BA%E7%90%86%E8%A7%A3%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98%E5%8F%8A%E5%A4%9A%E8%B7%AF%E7%BB%84%E7%9B%B8%E8%81%94/" target="_blank" rel="external">深入浅出理解高速缓存及多路组相联</a>，以及<a href="http://www.bigming.me/2017/03/20/%E8%99%9A%E6%8B%9F%E5%AD%98%E5%82%A8%E5%99%A8%E4%B9%8B%E7%89%A9%E7%90%86%E5%AF%BB%E5%9D%80%E3%80%81%E8%99%9A%E6%8B%9F%E5%AF%BB%E5%9D%80%E5%8F%8A%E5%88%86%E9%A1%B5/" target="_blank" rel="external">虚拟存储器之物理寻址、虚拟寻址及分页</a>，<a href="http://www.bigming.me/2017/03/21/Intel-Core-i7-Linux%E5%AD%98%E5%82%A8%E5%99%A8%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%A7%88/" target="_blank" rel="external">Intel Core i7/Linux存储器系统概览</a>。</p>
+<ul>
+<li>内存屏障（memory barriers）：一组处理器命令，用于实现对内存的顺序限制</li>
+<li>缓冲行（cache line）：CPU高速缓存中可以分配的最小存储单位。处理器填写缓存行时会加载整个缓存行，现代CPU需要执行几百次CPU指令。</li>
+<li>原子操作（atomic operations）：不可中断的一个或一系列操作</li>
+<li>缓存行填充（cache line fill）：当处理器识别到从内存中读取操作数是可缓存的，处理器读取整个高速缓存行到适当的缓存（L1,L2,L3的或所有）</li>
+<li>缓存命中（cache hit）：如果矩形高速缓存行填充操作的内存位置仍然是下次处理器访问的地址时，处理器从缓存中读取操作数，而不是从内存读取</li>
+<li>写命中（write hit）：当处理器将操作数写回到一个内存缓存的区域时，它首先会检查这个缓存的内存地址是否在缓存行中，如果存在一个有效的缓存行，则处理器将这个操作数写回到缓存，而不是写回到内存，这个操作称为写命中</li>
+<li>写缺失（write misses the cache）：一个有效的缓存行被写入到不存在的内存区域</li>
+</ul>
+<p>volatile实现可见性是因为有volatile修饰的共享变量进行写操作的时候会多出以后lock前缀的指令，Lock前缀的指令在多核处理器中会引发两件事情：</p>
+<ol>
+<li>将当前处理器缓存行的数据写回到系统内存</li>
+<li>这个写回内存的操作会使其他CPU核中缓存了该内存地址的数据无效</li>
+</ol>
+<p>通常情况下为了提高处理速度，处理器不直接和内存通信，而是先将系统内存的数据读到内部缓存中（L1,L2等）后再进行操作，但操作完后一般不会直接写回到内存中（也就是采用写回而不是直写策略）。如果声明了volatile的变量进行写操作，那么JVM就会向处理器发送一条Lock前缀指令，将这个变量所在的缓存行写回到系统内存中。但是，就算写回到内存中，如果其他处理器缓存的值是旧的，也还是无效，所以多核处理器下为了保证各个处理器缓存的一致性，会通过缓存一致性协议，每个处理器通过嗅探在总线上传播的数据来检查自己缓存的值是否过期，如果发现自己缓存行对应的内存地址呗修改，那么久会将当前处理器的缓存行设置成无效状态，当再次需要对该数据进行修改操作时会重新从系统内存中把数据加载到处理器缓存里。</p>
+<p>也就是说，volatile的两条实现原则为：</p>
+<ol>
+<li>Lock前缀指令会引起处理器缓存会写到内存。Lock前缀指令导致在执行指令期间，声言处理器的LOCK#信号。多处理环境中，LOCK#信号确保在声言该信号期间，处理器可以独占任何共享内存（锁住总线，导致其他CPU不能访问总线，也就不能访问系统内存）。现代处理器LOCK#信号一般不锁总线，而是锁缓存，因为锁总线开销太大。通过缓存一致性机制确保修改的原子性，称为“缓存锁定”，缓存一致性协议会阻止同时修改由两个以上处理器缓存的内存区域数据。</li>
+<li>一个处理器的缓存会写到内存会导致其他处理器的缓存无效。IA-32处理器和Intel 64处理器使用MESI(修改、独占、共享、无效)控制协议去维护内部缓存和其他处理器缓存访问系统内存和它们的内部缓存。处理器使用嗅探技术保证它的内部缓存、系统内存和其他处理器的缓存的数据在总线上保持一致。如果通过嗅探一个处理器来检测其他处理器打算写内存地址，而这个地址当前处于共享状态，那么正在嗅探的处理器将它的缓存行无效，下次访问相同内存地址时，强制执行缓存行填充。</li>
+</ol>
+<h3 id="volatile的优化使用"><a href="#volatile的优化使用" class="headerlink" title="volatile的优化使用"></a>volatile的优化使用</h3><p>一个典型的例子是Java并发编程大师Doug lea在JDK 7的并发包里新增的队列集合类LinkedTransferQueue，它在使用volatile变量时，有一种追加字节的方式来优化队列出队和入队的性能。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** head of the queue; null until first enqueue */</span></div><div class="line"><span class="keyword">transient</span> <span class="keyword">volatile</span> Node head;</div><div class="line"><span class="comment">/** tail of the queue; null until first append */</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">transient</span> <span class="keyword">volatile</span> Node tail;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">PaddedAtomicReference</span> &lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">AtomicReference</span>&lt;<span class="title">T</span>&gt; </span>&#123;</div><div class="line">    Object p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pa, pb, pc, pd, pe;</div><div class="line">    PaddedAtomicReference(T r) &#123;</div><div class="line">        <span class="keyword">super</span>(r);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AtomicReference</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> V value;</div><div class="line">    <span class="comment">// 省略剩余代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这里LinkedTransferQueue使用一个内部类类型定义队列的头结点(head)和尾节点(tail)，而该内部类PaddedAtomicReference相对于父类就是追加了15个变量，因为每个对象的引用占4字节，所以是一共60字节，再加上父类AtomicReference中的value变量的4字节，一共是64字节。</p>
+<p>之所以要追加变量到61字节是因为你Intel酷睿i7，Atom以及Pentium M，Core Solo等处理器的L1，L2，L3缓存的高速缓存行是64个字节宽<a href="http://www.bigming.me/2017/03/21/Intel-Core-i7-Linux%E5%AD%98%E5%82%A8%E5%99%A8%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%A7%88/" target="_blank" rel="external">Intel Core i7/Linux存储器系统概览</a>，不支持部分填充缓存行。也就是说，如果队列头结点和尾节点都不足64字节的话，处理器会将它们放在一个高速缓存行中，在多处理器下每个处理器都会缓存同样的头、尾节点，那么当一个处理器试图修改头结点时，会将整个缓存行锁定，在缓存一致性协议下，会导致其他处理器不能访问自己高速缓存行中的尾节点，而队列的出队入队需要频繁更改头尾节点，因此在多处理器情况下会严重影响到队列的入队和出队效率。Doug Lea通过将追加到64字节的方式来填满高速缓冲区的缓存行，避免头结点和尾节点加载到同一行，使头尾节点修改时不会互相锁定。</p>
+<p>但是对于其他一些情况的volatile变量不需要追加到64字节：</p>
+<ul>
+<li>缓存行非64字节宽的处理器，对于P6系列和奔腾处理器，它们的L1，L2缓存行是32个字节宽。</li>
+<li>共享变量不会被频繁地写。因为追加字节的方式需要处理器读取更多的字节到高速缓冲区，本身会带来空间的浪费以及性能上的损耗，所有如果共享变量不被频繁写的话，锁的几率也非常小，没必要通过追加字节的方式来避免相互锁定。</li>
+</ul>
+<p>其实JDK 7后面的版本已经摒弃了这种PaddedAtomicReference的做法，因为JDK 7变得更为聪明，它会淘汰或重新排列无用字段，需要使用其他追加字节的方式。</p>
+<h2 id="synchronized的实现机制及应用"><a href="#synchronized的实现机制及应用" class="headerlink" title="synchronized的实现机制及应用"></a>synchronized的实现机制及应用</h2><p>synchronized在Java多线程并发编程中属于元老级的角色，很多人称它为重量级锁，但是JDK 6对synchronized以及进行了各种优化，使得有些情况下它并不那么重了。JDK 6为了减少获得锁和释放锁带来的性能损耗，引入了偏向锁和轻量级锁，以及锁的存储结构和升级过程。</p>
+<p>synchronized实现同步的基础是Java中的每一个对象都可以作为锁！！！具体表现为以下3种形式：</p>
+<ul>
+<li>对于普通同步方法，锁是当前实例对象</li>
+<li>对于静态同步方法，锁是当前类的Class对象</li>
+<li>对于同步方法块，锁是synchronized括号里配置的对象</li>
+</ul>
+<p>当一个线程试图访问同步代码块时，它首先必须得到锁，退出或抛出异常时必须释放锁。那么锁到底是什么？锁又在哪里？</p>
+<p>JVM规范中synchronized的实现原理是JVM基于进入和退出Monitor对象来实现方法同步和代码块同步的，但是两者的实现细节不一样。代码块同步是使用monitorenter和monitorexit指令实现的，而方法同步是使用另一种方式实现，具体细节在JVM规范中没有详细说明。但是，方法同步同样可以使用这两个指令来实现。</p>
+<p>monitorenter指令是在编译后插入到同步代码块的开始位置，而monitorexit是插入到方法结束处和异常处，JVM要保证每个monitorenter必须有对应的monitorexit与之匹配。任何对象都有一个monitor与之关联，并且当一个monitor被持有后，它将处于锁定状态。线程执行到monitorenter指令时，将会尝试获取对象所对应的monitor的所有权，即尝试获得对象的锁。</p>
+<h3 id="Java对象头"><a href="#Java对象头" class="headerlink" title="Java对象头"></a>Java对象头</h3><p>synchronized用的锁是存在Java对象头里的。如果对象是数组类型，则虚拟机用3个字宽(word)来存储对象头，如果对象是非数组类型，就用2字宽存储对象头。在32位虚拟机中，1字宽等于4字节，即32位。Java对象头如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_2.png" alt="Java对象头"></p>
+<p>Java对象头里的Mark Word默认存储对象的HashCode，分代年龄和锁标记位。32位JVM中的Mark Word的默认存储结构如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_3.png" alt="Java对象头的存储结构"></p>
+<p>在运行期间，Mark Word里存储的数据会随着锁标志位的变化而变化。Mark Word可能变化为存储以下4种数据，如下所示：<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_5.png" alt="Mark Word状态变化"></p>
+<p> 在64位虚拟机下，Mark Word是64位的，其存储结构如下所示：<br> <img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_6.png" alt="Mark Word存储结构"></p>
+<h3 id="锁的升级和对比"><a href="#锁的升级和对比" class="headerlink" title="锁的升级和对比"></a>锁的升级和对比</h3><p>在JDK 6中，锁一共4种状态，级别从低到高依次是：无锁状态、偏向锁状态、轻量级锁状态和重量级锁状态，这几个状态会随着竞争情况逐渐升级。锁可以升级但不能降级，意味着偏向锁升级到轻量级锁后不能降级成偏向锁，目的是为了提高获得锁和释放锁的效率。</p>
+<h4 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h4><p>研究表明，在大多数情况下，锁不仅不存在多线程竞争，而且总是由同一线程多次获得，因此为了降低获得锁的代价引入了偏向锁。当一个线程访问同步块并获取锁时，会在对象头和栈帧中的锁记录里存储锁偏向的线程ID，以后该线程在进入和退出同步块时不需要进行CAS操作来加锁和解锁，只需要简单测试一下对象头的Mark Word里是否存储着指向当前线程的偏向锁。如果成功，则获得了锁，如果失败，则需要再测试一下Mark Word中偏向锁的标识是否设置成了1（表示当前是偏向锁）：如果没有设置，则使用CAS竞争锁，如果设置了，则尝试使用CAS将对象头的偏向锁指向当前线程。</p>
+<h5 id="偏向锁的撤销"><a href="#偏向锁的撤销" class="headerlink" title="偏向锁的撤销"></a>偏向锁的撤销</h5><p>偏向锁使用一种等到竞争出现才释放锁的机制，所以当其他线程尝试竞争偏向锁时，持有偏向锁的线程才会释放锁。偏向锁的撤销，需要等到全局安全点（此时刻没有正在执行的字节码）。它会首先暂停拥有偏向锁的线程，然后检查持有偏向锁的线程是否活着，如果线程不处于活动状态，则将对象头设置成无锁状态；如果线程仍然活着，拥有偏向锁的栈会被执行，遍历偏向对象的锁记录，栈中的锁记录和对象头的Mark Word要么重新偏向于其他线程，要么恢复到无锁活着标记对象不适合偏向锁，最后唤醒暂停的线程。下图中线程1演示了偏向锁初始化的流程，线程2演示了偏向锁撤销的过程。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_8.png" alt="偏向锁的获得和撤销"></p>
+<h5 id="关闭偏向锁"><a href="#关闭偏向锁" class="headerlink" title="关闭偏向锁"></a>关闭偏向锁</h5><p>偏向锁在JDK 6和JDK 7中是默认开启的，但是它在应用程序启动几秒钟之后才激活，可以使用JVM参数来关闭延迟：-XX:BiasedLockingStartupDelay=0。如果确定应用程序里所有的锁通常情况下处于竞争状态，可以通过JVM参数关闭偏向锁：-XX:-UseBiasedLocking=false，那么程序默认会加入轻量级锁状态。</p>
+<h4 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h4><h5 id="轻量级锁加锁"><a href="#轻量级锁加锁" class="headerlink" title="轻量级锁加锁"></a>轻量级锁加锁</h5><p>线程在执行同步块之前，JVM会先在当前线程的栈帧中创建用于存储锁记录的空间，并将对象头的Mark Word复制到锁记录中，官方称为Displaced Mark Word。然后线程尝试使用CAS将对象头中的Mark Word替换为指向锁记录的指针。如果成功，当前线程获得锁，如果失败，表示其他线程竞争锁，当前线程便尝试使用自旋锁来获取锁。</p>
+<h5 id="轻量级锁解锁"><a href="#轻量级锁解锁" class="headerlink" title="轻量级锁解锁"></a>轻量级锁解锁</h5><p>轻量级解锁时，会使用原子的CAS操作将Displaced Mark Word替换回到对象头，如果成功，表示没有竞争发生。如果失败，表示当前锁存在竞争，锁就会膨胀成重量级锁。下图是两个线程同时竞争锁，导致锁膨胀的流程图。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_9.png" alt="轻量级锁膨胀"></p>
+<p>因为自旋会消耗CPU，为了避免无用的自旋（比如获得锁的线程被阻塞住了），一旦锁升级成重量级锁，就不会恢复到轻量级锁状态。当锁处于该状态时，其他线程试图获取锁时，都会被阻塞住，当持有锁的线程释放锁之后会唤醒这些线程，被唤醒的线程机会进行新一轮的夺锁之争。</p>
+<h4 id="锁的优缺点比较"><a href="#锁的优缺点比较" class="headerlink" title="锁的优缺点比较"></a>锁的优缺点比较</h4><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_10.png" alt="锁的优缺点"></p>
+<h2 id="原子操作的实现原理"><a href="#原子操作的实现原理" class="headerlink" title="原子操作的实现原理"></a>原子操作的实现原理</h2><p>原子操作是指“不可被中断的一个或一系列操作”。这里主要关注Java和Intel处理器是如何实现原子操作的。</p>
+<h3 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h3><p>在了解具体实现原理之前，理解一些概念是非常重要的，这里主要涉及到的概念有：</p>
+<ul>
+<li>比较并交换（Compare and Swap）：CAS操作需要输入两个数值，一个旧值（期望操作前的值）和一个新值，在操作期间先比较旧值有没有发生变化，如果没有发生变化，才交换新值，发生了变化则不交换。</li>
+<li>CPU流水线（CPU pipeline）：CPU流水线的工作方式和工业生产上的装配流水线很像，在CPU中由5~6个不同功能的电路单元组成一条指令处理流水线，然后将一条X86指令分成5~6步后再由这些电路单元分别执行，这样就能实现在一个CPU时钟周期完成一条指令，因此提高CPU的运算速度。</li>
+<li>内存顺序冲突（Memory order violation）：内存顺序冲突一般是由假共享引起的，假共享是指多个CPU同时修改同一个缓存行的不同部分而引起其中一个CPU的操作无效，当出现这个内存顺序冲突时，CPU必须清空流水线。</li>
+</ul>
+<h3 id="处理器如何实现原子操作"><a href="#处理器如何实现原子操作" class="headerlink" title="处理器如何实现原子操作"></a>处理器如何实现原子操作</h3><p>32位IA-32处理器使用基于对缓存加锁或总线加锁的方式实现多处理器之间的原子操作。首先处理器自动保证基本的内存操作的原子性，比如处理器从系统内存中读取或写入一个字节是原子的，意思是当一个处理器读取一个字节时，其他处理器不能访问这个字节的内存地址。一般最新的喝醋李启能自动保证单处理器对同一个缓存行里进行16/32/64位的操作是原子的，但是复杂的内存操作处理器不能自动保证其原子性，比如跨总线宽度、跨多个缓存行和跨页表的访问。为了实现这些复杂内存操作的原子性，处理器使用总线锁定和缓存锁定两个机制来保证。</p>
+<h4 id="使用总线锁保证原子性"><a href="#使用总线锁保证原子性" class="headerlink" title="使用总线锁保证原子性"></a>使用总线锁保证原子性</h4><p>如果多个处理器同时对共享变量进行读写操作（比如i++），就可能会得到与期望不一致的结果。原因可能是多个处理器同时从各自缓存中读取变量i，分别进行加1操作，然后分别写入系统内存中。要想保证读改写共享变量的操作是原子的，就必须保证CPU1读改写共享变量的时候，CPU2不能操作缓存了该共享变量内存地址的缓存。</p>
+<p>处理器使用总线锁来解决，总线锁就是使用处理器提供的一个LOCK#信号，当一个处理器在总线上输出此信号时，其他处理器的请求将被阻塞住，那么该处理器尅独占共享内存。</p>
+<h4 id="使用缓存锁保证原子性"><a href="#使用缓存锁保证原子性" class="headerlink" title="使用缓存锁保证原子性"></a>使用缓存锁保证原子性</h4><p>同一时刻我们其实只需保证对某个内存地址的操作是原子性即可，但总线锁将CPU和内存之间的通信锁住了，开销很大，因为其他处理器不能操作其他内存地址的数据。</p>
+<p>频繁使用的内存会缓存在L1，L2，L3高速缓存里，那么原子操作可以直接在处理器内部缓存中进行，并不需要声明总线锁。现代处理器可以使用“缓存锁定”技术来实现复杂操作的原子性。“缓存锁定”是指内存区域如果被缓存在处理器的缓存行中，并且在Lock操作期间被锁定，那么当它执行锁操作回写到内存时，处理器不在总线上声言LOCK#信号，而是修改内部的内存地址，并允许它的缓存一致性机制保障操作的原子性，因为缓存一致性机制会阻止同时修改两个以上处理器缓存的内存区域数据，当其他处理器回写已被锁定的缓存行数据时，会使缓存行无效。如下图所示所示的中，当CPU1修改缓存行i时使用了缓存锁定，那么CPU2就不能同时缓存i的缓存行。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170324_11.png" alt="i++"></p>
+<p>有两种情况下处理器不会使用缓存锁定：</p>
+<ol>
+<li>当操作额数据不能被缓存在处理器内部，或操作的数据跨多个缓存行时，则处理器会调用总线锁定。</li>
+<li>有些处理器不支持缓存锁定，对于Intel 486和奔腾处理器，就算锁定的内存区域在处理器的缓存行中也会调用总线锁定。</li>
+</ol>
+<p>Intel处理器针对总线锁定和缓存锁定提供了很多Lock前缀的指令来实现。例如位测试和修改指令：BTS、BTR、BTC；交换指令XADD、CMPXCHG，以及其他一些操作数和逻辑指令，如ADD，OR等，这些指令操作的内存就会加锁，导致其他处理器不能同时访问它。</p>
+<h3 id="Java如何实现原子操作"><a href="#Java如何实现原子操作" class="headerlink" title="Java如何实现原子操作"></a>Java如何实现原子操作</h3><p>Java中可以通过锁和循环CAS的方式来实现原子操作。</p>
+<h4 id="使用循环CAS操作实现原子操作"><a href="#使用循环CAS操作实现原子操作" class="headerlink" title="使用循环CAS操作实现原子操作"></a>使用循环CAS操作实现原子操作</h4><p>JVM中的CAS操作利用了处理器提供的CMPXCHG指令实现。子旋CAS实现的基本思路就是循环进行CAS操作直到成功为止。如下代码所示的是一个基于CAS线程安全的计数器方法safeCount和一个非线程安全的计数器count。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> concurrency.bigming;</div><div class="line"></div><div class="line"><span class="keyword">import</span> java.util.ArrayList;</div><div class="line"><span class="keyword">import</span> java.util.List;</div><div class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by bigming on 2017/3/24.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDemo</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> AtomicInteger atomicI = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> i = <span class="number">0</span>;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        <span class="keyword">final</span> CountDemo cas = <span class="keyword">new</span> CountDemo();</div><div class="line">        List&lt;Thread&gt; ts = <span class="keyword">new</span> ArrayList&lt;Thread&gt;(<span class="number">600</span>);</div><div class="line">        <span class="keyword">long</span> start = System.currentTimeMillis();</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">100</span>; j++) &#123;</div><div class="line">            Thread t = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</div><div class="line">                        cas.count();;</div><div class="line">                        cas.safeCount();</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">            ts.add(t);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">for</span> (Thread t : ts) &#123;</div><div class="line">            t.start();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">for</span> (Thread t : ts) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                t.join();</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        System.out.println(cas.i);</div><div class="line">        System.out.println(cas.atomicI.get());</div><div class="line">        System.out.println(System.currentTimeMillis() - start);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">safeCount</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> (;;) &#123;</div><div class="line">            <span class="keyword">int</span> i = atomicI.get();</div><div class="line">            <span class="keyword">boolean</span> suc = atomicI.compareAndSet(i, ++i);</div><div class="line">            <span class="keyword">if</span> (suc) &#123;</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">count</span><span class="params">()</span> </span>&#123;</div><div class="line">        i++;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里每次运行输出的i的值都有可能不同，但atomicI的值都是相同的，因为CAS操作保证了原子性。</p>
+<p>从JDK 5开始并发包里提供了一些类来支持原子操作，如AtomicBoolean，AtomicInteger和AtomicLong等。</p>
+<h4 id="CAS实现原子操作的三大问题"><a href="#CAS实现原子操作的三大问题" class="headerlink" title="CAS实现原子操作的三大问题"></a>CAS实现原子操作的三大问题</h4><h5 id="ABA问题"><a href="#ABA问题" class="headerlink" title="ABA问题"></a>ABA问题</h5><p>因为CAS需要在操作值时检查值有没有发生变化，如果没有发生变化则更新，但是如果一个值用来是A，变成了B，最后又变成了A，使用CAS会认为其没有发生变换，但是实际上是变化了的。比较有意思的一个例子是栈，每次CAS如果只检查栈顶，栈顶可能没有变化，但是栈里的内容是变化了的。</p>
+<p>ABA文件的解决思路是使用版本号，在遍历前面增加版本号，每次更新变量版本号加1，那么A-&gt;B-&gt;A就变成了1A-&gt;2B-&gt;3A。JDK 5的Atomic包中提供了一个类AtomicStampedReference来解决ABA问题。这个类的compareAndSet方法首先检查当前引用是否等于预期引用，且检查当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置成给定额更新值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(V   expectedReference,</span></span></div><div class="line">                             V   newReference,</div><div class="line">                             <span class="keyword">int</span> expectedStamp,</div><div class="line">                             <span class="keyword">int</span> newStamp) &#123;</div><div class="line">    Pair&lt;V&gt; current = pair;</div><div class="line">    <span class="keyword">return</span></div><div class="line">        expectedReference == current.reference &amp;&amp;</div><div class="line">        expectedStamp == current.stamp &amp;&amp;</div><div class="line">        ((newReference == current.reference &amp;&amp;</div><div class="line">          newStamp == current.stamp) ||</div><div class="line">         casPair(current, Pair.of(newReference, newStamp)));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="循环时间长开销大"><a href="#循环时间长开销大" class="headerlink" title="循环时间长开销大"></a>循环时间长开销大</h5><p>自旋CAS如果长时间不成功，会给CPU带来非常大的执行开销。如果JVM能支持处理器提供的pause指令，那么效率会有一定的提升。pause指令有两个作用：</p>
+<ol>
+<li>延迟流水线执行指令，使CPU不会消耗过多的执行资源，延迟的时间取决于具体的实现，有些处理器上延迟时间为零。</li>
+<li>避免在退出循环的时候因内存顺序冲突而引起CPU流水线被清空，从而提高CPU的执行效率。</li>
+</ol>
+<h5 id="只能保证一个共享变量的原子操作"><a href="#只能保证一个共享变量的原子操作" class="headerlink" title="只能保证一个共享变量的原子操作"></a>只能保证一个共享变量的原子操作</h5><p>对于多个共享变量时，循环CAS无法保证操作的原子性，这时可以用锁。当然，一个取巧的并发使把多个共享变量合并成一个共享变量来操作，比如两个共享变量i=2，j=a，则合并为ij=2啊，然后用CAS来操作ij。JDK 5开始AtomicReference类来保证引用对象之间的原子性，就可以把多个变量放在一个对象里进行CAS操作。</p>
+<h4 id="使用锁机制来实现原子操作"><a href="#使用锁机制来实现原子操作" class="headerlink" title="使用锁机制来实现原子操作"></a>使用锁机制来实现原子操作</h4><p>锁机制保证了只有获得锁的线程才能够操作锁定的内存区域。JVM内部实现了很多种锁机制，如之前所说的偏向锁，轻量级锁和互斥锁（重量级锁）。有意思的是，除了偏向锁，JVM实现锁的方式都用了循环CAS，即当一个线程想进入同步块的时候使用循环CAS方式来获取锁，当它退出同步块的时候使用循环CAS来释放锁。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/03/23/探索Java并发机制的底层实现原理/">探索Java并发机制的底层实现原理</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2017-03-23, 14:21:00</p>
+        <p><span>最后更新:</span>2017-03-24, 13:00:41</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/03/23/探索Java并发机制的底层实现原理/" title="探索Java并发机制的底层实现原理">http://bigmingtalk.github.io/2017/03/23/探索Java并发机制的底层实现原理/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/23/探索Java并发机制的底层实现原理/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/03/23/Unix共享文件原理及系统级I-O/">
+                    Unix共享文件原理及系统级I/O
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#并发编程的挑战"><span class="toc-number">1.</span> <span class="toc-text">并发编程的挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#上下文切换"><span class="toc-number">1.1.</span> <span class="toc-text">上下文切换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#减少上下文切换的方法"><span class="toc-number">1.1.1.</span> <span class="toc-text">减少上下文切换的方法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#死锁"><span class="toc-number">1.2.</span> <span class="toc-text">死锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#资源限制"><span class="toc-number">1.3.</span> <span class="toc-text">资源限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#volatile的应用"><span class="toc-number">2.</span> <span class="toc-text">volatile的应用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#volatile定义与实现原理"><span class="toc-number">2.1.</span> <span class="toc-text">volatile定义与实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#volatile的优化使用"><span class="toc-number">2.2.</span> <span class="toc-text">volatile的优化使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized的实现机制及应用"><span class="toc-number">3.</span> <span class="toc-text">synchronized的实现机制及应用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java对象头"><span class="toc-number">3.1.</span> <span class="toc-text">Java对象头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#锁的升级和对比"><span class="toc-number">3.2.</span> <span class="toc-text">锁的升级和对比</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#偏向锁"><span class="toc-number">3.2.1.</span> <span class="toc-text">偏向锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#偏向锁的撤销"><span class="toc-number">3.2.1.1.</span> <span class="toc-text">偏向锁的撤销</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#关闭偏向锁"><span class="toc-number">3.2.1.2.</span> <span class="toc-text">关闭偏向锁</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#轻量级锁"><span class="toc-number">3.2.2.</span> <span class="toc-text">轻量级锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#轻量级锁加锁"><span class="toc-number">3.2.2.1.</span> <span class="toc-text">轻量级锁加锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#轻量级锁解锁"><span class="toc-number">3.2.2.2.</span> <span class="toc-text">轻量级锁解锁</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#锁的优缺点比较"><span class="toc-number">3.2.3.</span> <span class="toc-text">锁的优缺点比较</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原子操作的实现原理"><span class="toc-number">4.</span> <span class="toc-text">原子操作的实现原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#术语定义"><span class="toc-number">4.1.</span> <span class="toc-text">术语定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#处理器如何实现原子操作"><span class="toc-number">4.2.</span> <span class="toc-text">处理器如何实现原子操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#使用总线锁保证原子性"><span class="toc-number">4.2.1.</span> <span class="toc-text">使用总线锁保证原子性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用缓存锁保证原子性"><span class="toc-number">4.2.2.</span> <span class="toc-text">使用缓存锁保证原子性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java如何实现原子操作"><span class="toc-number">4.3.</span> <span class="toc-text">Java如何实现原子操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#使用循环CAS操作实现原子操作"><span class="toc-number">4.3.1.</span> <span class="toc-text">使用循环CAS操作实现原子操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CAS实现原子操作的三大问题"><span class="toc-number">4.3.2.</span> <span class="toc-text">CAS实现原子操作的三大问题</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#ABA问题"><span class="toc-number">4.3.2.1.</span> <span class="toc-text">ABA问题</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#循环时间长开销大"><span class="toc-number">4.3.2.2.</span> <span class="toc-text">循环时间长开销大</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#只能保证一个共享变量的原子操作"><span class="toc-number">4.3.2.3.</span> <span class="toc-text">只能保证一个共享变量的原子操作</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用锁机制来实现原子操作"><span class="toc-number">4.3.3.</span> <span class="toc-text">使用锁机制来实现原子操作</span></a></li></ol></li></ol></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"探索Java并发机制的底层实现原理　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/03/23/探索Java并发机制的底层实现原理/" data-title="探索Java并发机制的底层实现原理" data-url="http://bigmingtalk.github.io/2017/03/23/探索Java并发机制的底层实现原理/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/03/23/Unix共享文件原理及系统级I-O/" title="下一篇: Unix共享文件原理及系统级I/O">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/23/探索Java并发机制的底层实现原理/">探索Java并发机制的底层实现原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/23/Unix共享文件原理及系统级I-O/">Unix共享文件原理及系统级I/O</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/22/C语言常见的存储器相关错误总结/">C语言常见的存储器相关错误总结</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Linux动态存储器分配及垃圾回收/">Linux动态存储器分配及垃圾回收</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/浅谈Linux存储器映射/">浅谈Linux存储器映射</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/">Intel Core i7/Linux存储器系统概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/20/虚拟存储器之物理寻址、虚拟寻址及分页/">虚拟存储器之物理寻址、虚拟寻址及分页</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/19/数组划分成不含相同元素子数组问题/">数组划分成不含相同元素子数组问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/18/操作系统之进程及异常控制流/">操作系统之进程及异常控制流</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/17/简单说说链接器和链接过程/">简单说说链接器和链接过程</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/深入浅出理解高速缓存及多路组相联/">深入浅出理解高速缓存及多路组相联</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/计算机存储层次结构概览/">计算机存储层次结构概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/15/整数与浮点数在计算机中的表示与计算/">整数与浮点数在计算机中的表示与计算</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">Java容器（Java Collection Framework）总览</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
