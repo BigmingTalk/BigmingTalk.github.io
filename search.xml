@@ -4,8 +4,8 @@
   
     
     <entry>
-      <title><![CDATA[tcp/ip之IP协议知识点记录]]></title>
-      <url>http://bigmingtalk.github.io/2017/03/27/tcp-ip%E4%B9%8BIP%E5%8D%8F%E8%AE%AE%E7%9F%A5%E8%AF%86%E7%82%B9%E8%AE%B0%E5%BD%95/</url>
+      <title><![CDATA[TCP/IP协议族之IP协议知识点记录]]></title>
+      <url>http://bigmingtalk.github.io/2017/03/27/TCP:IP%E5%8D%8F%E8%AE%AE%E6%97%8F%E4%B9%8BIP%E5%8D%8F%E8%AE%AE%E7%9F%A5%E8%AF%86%E7%82%B9%E8%AE%B0%E5%BD%95/</url>
       <content type="html"><![CDATA[<p> IP协议是TCP/IP协议族中最为核心的协议。所有的TCP、UDP、ICMP、IGMP数据都以IP数据报格式传输。IP提供不可靠、无连接的数据报传送服务。</p>
 <ul>
 <li>不可靠：不能保证IP数据报能成功地到达目的地。如果发生某种错误，如某个路由器暂时用完了缓冲区，IP有简单地错误处理算法：丢弃该数据，然后发送ICMP消息报给信源端。任何要求的可靠性必须由上层来提供（如TCP）</li>
@@ -1998,14 +1998,14 @@
   
     
     <entry>
-      <title><![CDATA[404 Not Found：该页无法显示]]></title>
-      <url>http://bigmingtalk.github.io//404.html</url>
+      <title><![CDATA[about]]></title>
+      <url>http://bigmingtalk.github.io/about/index.html</url>
       <content type="html"></content>
     </entry>
     
     <entry>
-      <title><![CDATA[about]]></title>
-      <url>http://bigmingtalk.github.io/about/index.html</url>
+      <title><![CDATA[404 Not Found：该页无法显示]]></title>
+      <url>http://bigmingtalk.github.io//404.html</url>
       <content type="html"></content>
     </entry>
     
