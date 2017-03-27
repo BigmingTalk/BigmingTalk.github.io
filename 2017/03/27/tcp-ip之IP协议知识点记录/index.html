@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no" />
+<meta name="author" content="Bigming" />
+
+
+
+<meta name="description" content="IP协议是TCP/IP协议族中最为核心的协议。所有的TCP、UDP、ICMP、IGMP数据都以IP数据报格式传输。IP提供不可靠、无连接的数据报传送服务。
+
+不可靠：不能保证IP数据报能成功地到达目的地。如果发生某种错误，如某个路由器暂时用完了缓冲区，IP有简单地错误处理算法：丢弃该数据，然后发送ICMP消息报给信源端。任何要求的可靠性必须由上层来提供（如TCP）
+无连接：IP并不维护任何关于后">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tcp/ip之IP协议知识点记录">
+<meta property="og:url" content="http://bigmingtalk.github.io/2017/03/27/tcp-ip之IP协议知识点记录/index.html">
+<meta property="og:site_name" content="Bigming">
+<meta property="og:description" content="IP协议是TCP/IP协议族中最为核心的协议。所有的TCP、UDP、ICMP、IGMP数据都以IP数据报格式传输。IP提供不可靠、无连接的数据报传送服务。
+
+不可靠：不能保证IP数据报能成功地到达目的地。如果发生某种错误，如某个路由器暂时用完了缓冲区，IP有简单地错误处理算法：丢弃该数据，然后发送ICMP消息报给信源端。任何要求的可靠性必须由上层来提供（如TCP）
+无连接：IP并不维护任何关于后">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_4.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_5.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_6.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_7.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_9.png">
+<meta property="og:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_8.png">
+<meta property="og:updated_time" content="2017-03-27T14:54:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tcp/ip之IP协议知识点记录">
+<meta name="twitter:description" content="IP协议是TCP/IP协议族中最为核心的协议。所有的TCP、UDP、ICMP、IGMP数据都以IP数据报格式传输。IP提供不可靠、无连接的数据报传送服务。
+
+不可靠：不能保证IP数据报能成功地到达目的地。如果发生某种错误，如某个路由器暂时用完了缓冲区，IP有简单地错误处理算法：丢弃该数据，然后发送ICMP消息报给信源端。任何要求的可靠性必须由上层来提供（如TCP）
+无连接：IP并不维护任何关于后">
+<meta name="twitter:image" content="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_4.png">
+
+<link rel="apple-touch-icon" href= "/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="Bigming" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>tcp/ip之IP协议知识点记录 | Bigming</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: true
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+    <script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5847fbe005a1a560"></script>
+
+
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?d80127bd386ab3b3794886e42674188c";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+
+
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">Bigming</a></h1>
+        </hgroup>
+
+        
+        <p class="header-subtitle">爱技术，爱生活。</p>
+        
+
+        
+            <form id="search-form">
+            <input type="text" id="local-search-input" name="q" placeholder="search..." class="search form-control" autocomplete="off" autocorrect="off" searchonload="true" />
+            <i class="fa fa-times" onclick="resetSearch()"></i>
+            </form>
+            <div id="local-search-result"></div>
+            <p class='no-result'>No results found <i class='fa fa-spinner fa-pulse'></i></p>
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AVL/">AVL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B*树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B+树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B-树/">B-树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/B树/">B树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Catalan/">Catalan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C语言/">C语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DRAM/">DRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fibonacci/">Fibonacci</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IO/">IO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Integer/">Integer</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JCF/">JCF</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JNI调用/">JNI调用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/">MMU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mark-Word/">Mark Word</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Object类/">Object类</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ROM/">ROM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SRAM/">SRAM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/">TLB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TreeMap/">TreeMap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/char类型/">char类型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/free/">free</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ip/">ip</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/malloc/">malloc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mmap/">mmap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/munmap/">munmap</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/native-method/">native method</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/private方法/">private方法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/static/">static</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/synchronized/">synchronized</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tcp/">tcp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/v-node表/">v-node表</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/volatile/">volatile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码单元/">代码单元</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码实现/">代码实现</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码点/">代码点</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/传值/">传值</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享文件/">共享文件</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/写作/">写作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分页/">分页</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/划分问题/">划分问题</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/卡特兰数/">卡特兰数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/垃圾回收/">垃圾回收</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多路组相联/">多路组相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储器映射/">存储器映射</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/容器/">容器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/寻址/">寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异常控制流/">异常控制流</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/引用/">引用</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/指针/">指针</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据结构/">数据结构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/整数/">整数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件系统/">文件系统</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/斐波那契数列/">斐波那契数列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/栈/">栈</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/浮点数/">浮点数</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入浅出/">深入浅出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/源码/">源码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理地址/">物理地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/物理寻址/">物理寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/直接映射，全相联/">直接映射，全相联</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/磁盘/">磁盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/符号解析/">符号解析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/索引/">索引</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/线程/">线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码/">编码</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟地址/">虚拟地址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟存储器/">虚拟存储器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/虚拟寻址/">虚拟寻址</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/记忆/">记忆</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重写/">重写</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/重定位/">重定位</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链接/">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/错误/">错误</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/队列/">队列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/高速缓存/">高速缓存</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+
+                
+                
+                <section class="switch-part switch-part3">
+                
+                    <div id="js-aboutme">爱技术，爱生活。</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">Bigming</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">Bigming</a></h1>
+            </hgroup>
+            
+            <p class="header-subtitle">爱技术，爱生活。</p>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:bigmingtalk@163.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="https://github.com/BigmingTalk" title="GitHub"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我"/>
+</nav>
+      <div class="body-wrap"><article id="post-tcp-ip之IP协议知识点记录" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/03/27/tcp-ip之IP协议知识点记录/" class="article-date">
+      <time datetime="2017-03-27T14:15:40.000Z" itemprop="datePublished">2017-03-27</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      tcp/ip之IP协议知识点记录
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ip/">ip</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tcp/">tcp</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <p> IP协议是TCP/IP协议族中最为核心的协议。所有的TCP、UDP、ICMP、IGMP数据都以IP数据报格式传输。IP提供不可靠、无连接的数据报传送服务。</p>
+<ul>
+<li>不可靠：不能保证IP数据报能成功地到达目的地。如果发生某种错误，如某个路由器暂时用完了缓冲区，IP有简单地错误处理算法：丢弃该数据，然后发送ICMP消息报给信源端。任何要求的可靠性必须由上层来提供（如TCP）</li>
+<li><p>无连接：IP并不维护任何关于后续数据报的状态信息。每个数据报的处理是相互独立的。IP数据报可以不按发送顺序接收，A先于B发送，可能B先于A接收到。</p>
+<a id="more"></a>
+</li>
+</ul>
+<h2 id="IP首部"><a href="#IP首部" class="headerlink" title="IP首部"></a>IP首部</h2><p>普通IP首部长为20个字节，除非含有选项字段，采用big endian字节序，4个字节的32bit以下面次序传输：首先是0-7bit，其次是8-15bit，然后是16-23bit，最后是24-31bit，在网络中传输都要求这种次序，又称作网络字节序。以其他字节序存储的机器，如little endian格式的在传输数据之前必须把首部转换成网络字节序。</p>
+<p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_4.png" alt="IP首部"><br>IP首部的内容为：</p>
+<ul>
+<li>4位版本：版本号为4，则为IPv4，还有IPv6</li>
+<li>4位首部长度：指的是首部占32bit字的数目，包括任何选项。其为4bit字段，因此首部最长为60字节，普通IP数据报（没有任何选择项）字段的值是5</li>
+<li>8位服务类型（TOS）：包括一个3bit的优先权字段（现在已被忽略），4bit的TOS子字段和1bit未用位（必须置0）。4bit的TOS分别代表：最小时延、最大吞吐量、最高可靠性、最小费用。4bit中只能置其中1bit为1。如果所有4bit都为0，则意味着一般服务。<br><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_5.png" alt="服务类型字段推荐值"><br>Telnet和Rlogin要求最小时延因为人们用它们来传输少量交互数据，FTP文件传输要求有最大的吞吐量，最高可靠性被指明给网络管理（SNMP）和路由选择协议，用户网络新闻（Usenet news，NNTP）是唯一要求最小费用的应用。大多数TCP/IP实现都不支持TOS特性，路由协议如OSPF和IS-IS都能根据这些字段的值就行路由决策。</li>
+<li>16位总长度（字节数）：总长度字段是指整个IP数据报的长度，以字节为单位。16位意味着最长可以为65535字节。当数据报被分片时，该字段的值也随着变化。大量使用UDP的应用（RIP，TFTP，BOOTP，DNS，SNMP）都限制用户数据长度为512字节，小于576字节。但是事实上大多数的实现（特别是支持网络文件系统NFS的实现）允许超过8192字节的IP数据报。16位总长度是必要的，因为一些数据链路（如以太网）需要填充一些数据以达到最小长度，没有总长度就不知道其中多少是IP数据报的内容而不是填充内容了</li>
+<li>16位标识：唯一地标识主机发送的每一份数据报。通常每发送一份报文它的值就会加1。</li>
+<li>3位标志和13位片偏移：用于分片</li>
+<li>8位生存时间（TTL）：设置了数据报可以经过的最多路由器数。指定了数据报的生存时间。其由源主机设置（通常位32或64），一旦经过一个处理它的路由器，值就减1，当该字段为0时，数据报就丢弃，并发送ICMP报文通知源主机。Traceroute程序主要就是利用了该字段。</li>
+<li>8位协议：识别是哪个协议向IP传送数据，用来对数据报进行分用。</li>
+<li>16位首部检验和：根据IP首部计算的检验和码，不对首部后面的数据进行计算。ICMP、IGMP、UDP、TCP在它们各自的首部中均含有同时覆盖首部和数据检验和码。计算一份数据报的IP检验和：<ul>
+<li>首先把检验和字段置为0</li>
+<li>对首部每16bit进行二进制反码求和，结果存在检验和字段中</li>
+<li>收到一份IP数据报后，同样对首部中每16bit进行二进制反码求和</li>
+<li>由于接收方在计算过程中包含了发送方存在首部中的检验和，因此如果首部在传输中没有发生任何错误，那么接收方计算的结果应该全为1，如果不是全为1，那么IP就丢弃收到的数据报，但是不生成差错报文，由上层去发现丢失的数据报并进行重传。RFC 1071有如何计算Internet检验和的实现技术，由于路由器经常只修改TTL字段（减1），因此当路由器转发一份报文时可以增加它的检验和，而不需要对IP整个首部进行重新计算，RFC 1141给出了一个很有效的方法。但是标准的BSD实现在转发数据报时并不是采用这种增加的办法</li>
+</ul>
+</li>
+<li>32位源IP地址和32位目的IP地址：IP地址都是32位的</li>
+<li>选项（如果有）：一个可变长的可选信息，选项字段一直都是以32bit作为界限，在必要的时候插入值为0的填充字节，保证IP首部始终是32bit的整数倍（首部长度字段要求）</li>
+</ul>
+<h2 id="IP路由选择"><a href="#IP路由选择" class="headerlink" title="IP路由选择"></a>IP路由选择</h2><p>当今大多数多用户系统，包括几乎所有的Unix系统，都可以配置成一个路由器。IP层在内存中有一个路由表，当接收到一份数据报并进行发送时，都要对该表搜索一次。当数据报来自某个网络接口时，IP首先检查目的IP地址是否位本机的IP地址之一或者IP广播地址。如果是，数据报就被发送到由IP首部协议字段所指定的协议模块进行处理。如果数据报的目的不是这些地址，那么</p>
+<ul>
+<li>如果IP层被设置为路由器的功能，那么就对数据报进行转发（也就是说，像下面对待发出的数据报一样处理）</li>
+<li>数据报丢弃</li>
+</ul>
+<p>路由表中每一项的信息：</p>
+<ul>
+<li>目的IP地址。可以是一个完整的主机地址，也可以是一个网络地址，由该表目中的标志字段指定。主机地址有一个非0的主机号，以指定某一特定的主机，而网络地址中的主机号为0，以指定网络中的所有主机</li>
+<li>下一站（或下一跳）路由器的IP地址，或者有直接连接的网络IP地址。下一站路由器是指一个在直接相连网络上的路由器，通过它可以转发数据报。</li>
+<li>标志。其中一个标志指明目的IP地址是网络地址还是主机地址，另一个标志指明下一站路由器是否为真正的下一站路由器，还是一个直接相连的接口。</li>
+<li>为数据报的传输指定一个网络接口。</li>
+</ul>
+<p>IP并不知道到达任何目的的完整路径（除了那些与主机直接相连的目的）。所有的IP路由选择职位数据报传输提供下一站路由器的IP地址，其假定下一站路由器比发送数据报的主机更接近目的，而且下一站路由器与该主机是直接相连的。</p>
+<h3 id="IP路由选择完成的功能"><a href="#IP路由选择完成的功能" class="headerlink" title="IP路由选择完成的功能"></a>IP路由选择完成的功能</h3><ul>
+<li>搜索路由表，寻找能与目的IP地址完全匹配的表目（网络号与主机号都要匹配）。如果找到，则把报文发送给该表目指定的下一站路由器或直接连接的网络接口（取决于标志字段的值）</li>
+<li>搜索路由表，寻找能与目的网络号相匹配的表目。如果找到，则把报文发送给该表目指定的下一站路由器或直接相连的网络接口（取决于标志字段的值）。目的网络上的所有主机都可以通过这个表目来处置。例如，一个以太网上的所有主机都是通过这种表目来进行寻径的。其中搜索网络的匹配方法必须考虑可能的子网掩码。</li>
+<li>搜索路由表，寻找标为默认的表目。如果找到，则把报文发送给该表目指定的下一站路由器。</li>
+</ul>
+<p>如果IP路由选择都没有成功，那么该数据就不能被传送。如果不能被传送的数据来自本机，则一般生成数据报的应用程序返回一个“主机不可达”或“网络不可达”的错误。</p>
+<p>默认路由，以及下一站路由器发送的ICMP重定向报文（如果我们位数据报选择了错误的默认路由），是IP路由选择机制中强大的特性。为一个网络指定一个路由器，而不必为每个主机指定一个路由器，这是IP路由选择机制的另一个基本特性。数据报中的目的IP始终不发生任何变化（在8.5中，只有使用源路由选项时，目的IP地址才有可能被修改，但这种情况很少出现），所有的路由选择都基于这个目的IP地址。每个链路层可能具有不同的数据帧首部，而且链路层的目的地址（如果有的话）始终指的是下一站的链路层地址。</p>
+<h2 id="子网寻址"><a href="#子网寻址" class="headerlink" title="子网寻址"></a>子网寻址</h2><p>子网编址：不是把IP地址看成由单纯的一个网络号和一个主机号组成，而是把主机号再分成一个子网号和一个主机号。由系统管理员决定是否建立子网，以及分配多少比特给子网号和主机号，如B类网络的网络地址为16位，在剩余的16bit中可以8bit作为子网号，8bit位主机号，但并不要求子网划分都要以字节位划分界限。与30个C类地址相比，用一个包括30个子网的B类地址的好处是，它可以缩小Internet路由表的规模，子网划分缩减了路由表的规模。子网对于子网内部的路由器是不透明的，子网内部的路由器可以知道如何进行路由转发来自外部的数据报</p>
+<h3 id="子网掩码"><a href="#子网掩码" class="headerlink" title="子网掩码"></a>子网掩码</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_6.png" alt="不同子网掩码"><br>子网掩码：主机需要知道多少比特用于子网号及多少比特用于主机号，这个掩码是一个32bit的值，其中值为1的比特留给网络号和子网号，为0的比特留给主机号。给定IP地址和子网掩码后，主机就可以确定IP数据报的目的是：</p>
+<ul>
+<li>本子网上的主机</li>
+<li>本网络其他子网上的主机</li>
+<li>其他网络上的主机</li>
+</ul>
+<p>如果知道本机的IP地址，那么就知道它是否位A类、B类、C类地址（从IP地址的高位可以得知），也就知道网络号与子网号之间的分界线。而根据子网掩码就可知道子网号与主机号之间的分界线</p>
+<h3 id="特殊情况的IP地址"><a href="#特殊情况的IP地址" class="headerlink" title="特殊情况的IP地址"></a>特殊情况的IP地址</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_7.png" alt="特殊IP地址"><br>上图中的7个特殊的IP地址，图中0表示所有的比特位全为0，-1表示所有的比特位全为1，netid、subnetid、hostid分别表示不全为0或不全为1的对应字段。子网号栏为空表示该地址没有进行子网划分。表头两项是特殊的源地址，中间项是特殊的环回地址，最后四项是广播地址。</p>
+<h3 id="变长子网"><a href="#变长子网" class="headerlink" title="变长子网"></a>变长子网</h3><p>变长子网允许一个含有子网的网络使用多个子网掩码，比如11位子网号中前8位始终是13，在剩下的3bit中用001表示以太网，010表示点对点SLIP链路，这个变长子网掩码不会给其他主机带来问题。</p>
+<ul>
+<li>sun和bids是多接口的，最后一行为以子网为目的的广播地址</li>
+</ul>
+<h3 id="ifconfig命令"><a href="#ifconfig命令" class="headerlink" title="ifconfig命令"></a>ifconfig命令</h3><p>环回接口（网络号为127，一般系统选择127.0.0.1给这个接口，并命名为localhost）被认为是一个网络接口，其是一个A类地址，没有进行子网划分。</p>
+<p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_9.png" alt="ifconfig"><br>各种不同的flag标志代表不同的选项，如SIMPLEX表明接口不能收到本机传送的数据。一旦这样设置后，如果接口发送一帧数据到广播地址，那么就会为本机拷贝一份数据送到环回地址</p>
+<h3 id="netstat命令"><a href="#netstat命令" class="headerlink" title="netstat命令"></a>netstat命令</h3><p><img src="http://oe0mec5i6.bkt.clouddn.com/Snip20170327_8.png" alt="netstat"><br>netstat命令提供系统上的接口信息，打印出每个接口的MTU、输入分组数、输入错误、输出分组数、输出错误、冲突以及当前的输出队列长度。</p>
+<h2 id="IPv4主要的问题"><a href="#IPv4主要的问题" class="headerlink" title="IPv4主要的问题"></a>IPv4主要的问题</h2><ul>
+<li>B类地址数的耗尽</li>
+<li>32bit的IP地址不够用</li>
+<li>当前路由结构没有层次结构，属于平面型结构，随着网络数目的增长，必须分配多个C类地址，而不是一个B类地址，因此路由表的规模会不断增长</li>
+</ul>
+<h2 id="问题小结："><a href="#问题小结：" class="headerlink" title="问题小结："></a>问题小结：</h2><ul>
+<li>环回地址必须是127.0.0.1吗？答：不必须，任何网络号为127的A类地址都是可行的，只是大多数系统选择127.0.0.1</li>
+<li>网号为16bit的A类地址与子网号为8bit的B类地址的子网掩码有什么不同？答：子网掩码是一样的，但是可以从本机IP地址分析其为A类网络还是B类网络。</li>
+<li>网掩码255.255.0.255是否对A类地址有效？答：它是合法的，被称为非连续的子网掩码，因为其用于子网掩码的16位是不连续的，但是RFC建议反对使用非连续的子网掩码，对一个A类地址划分出来的子网，A类地址前8为是固定的，所以前8位的掩码必定全为1，而它用哪几位主机号来划分子网则不是固定的，只是我们习惯上用前几位而已。用哪几位划分子网，哪几位的掩码就是1。所以掩码是255.255.0.255，对A类地址来说，表示用于划分子网的子网号是9-16和25-32，并不是我们习惯使用的9-24位。</li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/2017/03/27/tcp-ip之IP协议知识点记录/">tcp/ip之IP协议知识点记录</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
+        <p><span>发布时间:</span>2017-03-27, 22:15:40</p>
+        <p><span>最后更新:</span>2017-03-27, 22:54:13</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/2017/03/27/tcp-ip之IP协议知识点记录/" title="tcp/ip之IP协议知识点记录">http://bigmingtalk.github.io/2017/03/27/tcp-ip之IP协议知识点记录/</a>
+            <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/27/tcp-ip之IP协议知识点记录/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/2017/03/23/探索Java并发机制的底层实现原理/">
+                    探索Java并发机制的底层实现原理
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#IP首部"><span class="toc-number">1.</span> <span class="toc-text">IP首部</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IP路由选择"><span class="toc-number">2.</span> <span class="toc-text">IP路由选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IP路由选择完成的功能"><span class="toc-number">2.1.</span> <span class="toc-text">IP路由选择完成的功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#子网寻址"><span class="toc-number">3.</span> <span class="toc-text">子网寻址</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#子网掩码"><span class="toc-number">3.1.</span> <span class="toc-text">子网掩码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特殊情况的IP地址"><span class="toc-number">3.2.</span> <span class="toc-text">特殊情况的IP地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#变长子网"><span class="toc-number">3.3.</span> <span class="toc-text">变长子网</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ifconfig命令"><span class="toc-number">3.4.</span> <span class="toc-text">ifconfig命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#netstat命令"><span class="toc-number">3.5.</span> <span class="toc-text">netstat命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IPv4主要的问题"><span class="toc-number">4.</span> <span class="toc-text">IPv4主要的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题小结："><span class="toc-number">5.</span> <span class="toc-text">问题小结：</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录"  title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></i></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"tcp/ip之IP协议知识点记录　| Bigming　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+        <div class="addthis_sharing_toolbox"></div>
+    
+</div>
+
+
+
+
+
+
+
+    
+      <div class="duoshuo" id="comments">
+    <div id="comment-box" ></div>
+    <div class="ds-thread" id="ds-thread" data-thread-key="2017/03/27/tcp-ip之IP协议知识点记录/" data-title="tcp/ip之IP协议知识点记录" data-url="http://bigmingtalk.github.io/2017/03/27/tcp-ip之IP协议知识点记录/"></div>
+    <script>
+        var duoshuoQuery = {short_name:"bigming"};
+        var loadComment = function(){
+            var d = document, s = d.createElement('script');
+            s.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            s.async = true; s.charset = 'UTF-8';
+            (d.head || d.body).appendChild(s);
+        }
+
+        
+    </script>
+    
+    <script> loadComment(); </script>
+
+</div>
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/2017/03/23/探索Java并发机制的底层实现原理/" title="下一篇: 探索Java并发机制的底层实现原理">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/27/tcp-ip之IP协议知识点记录/">tcp/ip之IP协议知识点记录</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/23/探索Java并发机制的底层实现原理/">探索Java并发机制的底层实现原理</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/23/Unix共享文件原理及系统级I-O/">Unix共享文件原理及系统级I/O</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/22/C语言常见的存储器相关错误总结/">C语言常见的存储器相关错误总结</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Linux动态存储器分配及垃圾回收/">Linux动态存储器分配及垃圾回收</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/浅谈Linux存储器映射/">浅谈Linux存储器映射</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/21/Intel-Core-i7-Linux存储器系统概览/">Intel Core i7/Linux存储器系统概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/20/虚拟存储器之物理寻址、虚拟寻址及分页/">虚拟存储器之物理寻址、虚拟寻址及分页</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/19/数组划分成不含相同元素子数组问题/">数组划分成不含相同元素子数组问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/18/操作系统之进程及异常控制流/">操作系统之进程及异常控制流</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/17/简单说说链接器和链接过程/">简单说说链接器和链接过程</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/深入浅出理解高速缓存及多路组相联/">深入浅出理解高速缓存及多路组相联</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/16/计算机存储层次结构概览/">计算机存储层次结构概览</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/15/整数与浮点数在计算机中的表示与计算/">整数与浮点数在计算机中的表示与计算</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/14/程序员角度看计算机系统/">程序员角度看计算机系统</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/09/Fibonacci数列的O-logn-解法/">Fibonacci数列的O(logn)解法</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/04/Java容器（Java-Collection-Framework）总览/">Java容器（Java Collection Framework）总览</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/28/说说B-树，B-树，B-树/">说说B-树，B+树，B*树</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/27/深入浅析理解AVL树[含代码实现]/">深入浅析理解AVL树[含代码实现]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/说说卡特兰数/">说说卡特兰数</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/26/深入理解红黑树及TreeMap源码实现/">深入理解红黑树及TreeMap源码实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/17/十八般排序算法，样样精通/">十八般排序算法，样样精通</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/13/深入浅出数据结构之栈与队列[例子，技巧与使用场景]/">深入浅出数据结构之栈与队列[例子，技巧与使用场景]</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/06/Java源码解读之Integer/">Java源码解读之Integer及自动装箱拆箱</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/Java中Object类源代码详解(转)/">Java中Object类源代码详解(转)</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/05/谈谈Java的native关键字以及JNI调用和实现/">谈谈Java的native关键字以及JNI调用和实现</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/01/说说Java中的静态内部类/">说说Java中的静态内部类</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/11/Java传值还是传引用？读完这篇文章你就懂了！/">Java传值还是传引用？读完这篇文章你就懂了！</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/09/Java中的字符编码，代码点与代码单元/">Java中的字符编码，代码点与代码单元</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/04/Java中private方法能重写吗？/">Java中private方法能重写吗？</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/09/21/有的没的，写下来的才是你的/">有的没的，写下来的才是你的</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2016-2017 Bigming
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style='display:none'>
+                        <span id="page-visit"  title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+             post: ".article-entry a[href], .copyright a[href]", 
+            
+            
+            
+            
+            
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
