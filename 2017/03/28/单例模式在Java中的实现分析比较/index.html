@@ -21,7 +21,7 @@
 <meta property="og:url" content="http://bigmingtalk.github.io/2017/03/28/单例模式在Java中的实现分析比较/index.html">
 <meta property="og:site_name" content="Bigming">
 <meta property="og:description" content="本文主要分析单例模式在Java中的各种实现方式，既有线程安全的也有线程不安全的实现，并分析它们各自存在的问题以及性能比较。并结合可能存在的多个类加载器问题、反序列化问题、反射问题、克隆问题做出解答。">
-<meta property="og:updated_time" content="2017-03-28T12:33:13.000Z">
+<meta property="og:updated_time" content="2017-03-28T12:34:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="单例模式在Java中的实现分析比较">
 <meta name="twitter:description" content="本文主要分析单例模式在Java中的各种实现方式，既有线程安全的也有线程不安全的实现，并分析它们各自存在的问题以及性能比较。并结合可能存在的多个类加载器问题、反序列化问题、反射问题、克隆问题做出解答。">
@@ -337,6 +337,7 @@
 <li>该类对象只能有一个，有多个惰性会造成不可预测的错误，比如只有一个缓存等。</li>
 </ul>
 <p>对于上面7中方式的写法，第一种方式是线程不安全的，只是示例使用，第二种性能太低，一般也不做考虑，第三种和第四种其实可以说是同一种方式的不同形式，我个人比较推荐枚举方式和静态内部类方式，当然双重锁定方式也很好，不过他们枚举和双重锁定都只能在JDK 5之后才有效，所以个人觉得最好的方式还是静态内部类模式。</p>
+<p>参考：<br>《Effective Java》<br>《Java并发编程的艺术》<br>《深入理解Java虚拟机》</p>
 
       
     </div>
@@ -348,7 +349,7 @@
         <p><span>本文标题:</span><a href="/2017/03/28/单例模式在Java中的实现分析比较/">单例模式在Java中的实现分析比较</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">Bigming</a></p>
         <p><span>发布时间:</span>2017-03-28, 19:00:57</p>
-        <p><span>最后更新:</span>2017-03-28, 20:33:13</p>
+        <p><span>最后更新:</span>2017-03-28, 20:34:18</p>
         <p>
             <span>原始链接:</span><a class="post-url" href="/2017/03/28/单例模式在Java中的实现分析比较/" title="单例模式在Java中的实现分析比较">http://bigmingtalk.github.io/2017/03/28/单例模式在Java中的实现分析比较/</a>
             <span class="copy-path" data-clipboard-text="原文: http://bigmingtalk.github.io/2017/03/28/单例模式在Java中的实现分析比较/　　作者: Bigming" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
